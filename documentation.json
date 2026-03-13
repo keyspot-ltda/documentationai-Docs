@@ -2,10 +2,14 @@
   "name": "Keyspot Partner API",
   "colors": {
     "light": {
-      "brand": "#511386"
+      "brand": "#511386",
+      "heading": "#1a1a1a",
+      "text": "#374151"
     },
     "dark": {
-      "brand": "#AB67E4"
+      "brand": "#59e4d1",
+      "heading": "#f2f2f2",
+      "text": "#c1c1c1"
     }
   },
   "navigation": {
@@ -114,5 +118,7 @@
         ]
       }
     ]
-  }
+  },
+  "logo-dark": "https://blob-cdn.documentation.ai/org-64cbeb06-1361-4569-8014-2159e86c8352/doc-cee040a8-3fb9-4ce4-9aeb-8de5168eb0ed/1773419323415-2i9yui7qx2a-logo-light.webp?q=85&fm=auto&auto=compress%2Cformat",
+  "logo-light": "https://blob-cdn.documentation.ai/org-64cbeb06-1361-4569-8014-2159e86c8352/doc-cee040a8-3fb9-4ce4-9aeb-8de5168eb0ed/1773419336356-mrfhmu84gyk-logo.webp?q=85&fm=auto&auto=compress%2Cformat"
 }
