@@ -1,94 +1,86 @@
 ---
-title: Introduction to Keyspot
-description: Discover Keyspot, the all-in-one SaaS platform for real estate agencies, featuring CRM, AI-powered websites, and intelligent lead management to streamline operations and boost conversions.
+title: "Keyspot Partner API"
+description: "API de integração para parceiros da Keyspot. Consulte imóveis, gerencie leads e sincronize dados do sistema imobiliário via REST."
 ---
 
-<Callout kind="info" title="Starter Kit Template">
-  This documentation was generated as a starter kit template based on your brand. Please review and customize the content to accurately reflect your product's features, APIs, and capabilities.
-</Callout>
+## Visão geral
 
-## Overview
+A **Keyspot Partner API** permite que parceiros integrem seus sistemas com a plataforma Keyspot. Você consulta imóveis publicados, cria e lista leads, e acessa metadados do sistema — tudo via endpoints REST com autenticação JWT.
 
-Keyspot provides real estate agencies with a unified platform that combines CRM functionality, AI-enhanced websites, and intelligent lead management. You centralize leads, properties, and customer interactions in one place, while the AI works around the clock to convert visitors into qualified opportunities. This setup streamlines your operations and increases conversions without the complexity of multiple tools.
+A API foi projetada para cenários como:
 
-## Key Features
+- Sincronização de catálogo de imóveis com portais e sites externos
+- Captação de leads a partir de formulários e landing pages
+- Integração com CRMs e ferramentas de marketing
+- Alimentação de dashboards e relatórios personalizados
 
-Keyspot stands out with its core components tailored for real estate businesses. Explore the main pillars below.
+## Para quem é esta documentação
 
 <Columns cols={3}>
-  <Card title="AI-Powered Website" icon="zap" href="#ai-website">
-    Build modern websites with intelligent search, personalized recommendations, and immersive experiences like video feeds and favorites. Your site generates qualified leads automatically.
+  <Card title="Desenvolvedores" icon="code" href="/comece-aqui/quickstart">
+    Integre sua aplicação à Partner API com exemplos práticos em Bash, TypeScript e Python.
   </Card>
-  <Card title="Intelligent CRM" icon="database" href="#crm">
-    Manage leads, properties, and teams efficiently. Track interactions, automate follow-ups, and gain insights to close deals faster.
+  <Card title="Parceiros" icon="handshake" href="/guias/fluxo-integracao">
+    Entenda o fluxo completo de integração, do sandbox à produção.
   </Card>
-  <Card title="Lead Management" icon="users" href="#leads">
-    Capture and qualify leads 24/7 with AI. From visitor preferences to smart matching, turn traffic into revenue.
+  <Card title="Times de Produto" icon="layout" href="/referencia/dicionario-dados">
+    Consulte o dicionário de dados com todas as entidades, campos e enumerações.
   </Card>
 </Columns>
 
-## Benefits for Real Estate Agencies
-
-Switch to Keyspot to experience:
-
-- **Qualified Leads**: AI analyzes visitor behavior for better matching.
-- **Streamlined Operations**: One platform replaces fragmented tools.
-- **Higher Conversions**: Immersive site features keep users engaged longer.
-
-<Callout kind="success">
-  Agencies using Keyspot report up to 40% more qualified leads within the first month.
-</Callout>
-
-## Quick Start
-
-Get up and running in minutes. Follow these steps to launch your Keyspot instance.
+## Jornada recomendada
 
 <Steps>
-  <Step title="Sign Up" icon="user-plus">
-    Create your account at `https://dashboard.example.com/signup`. Use your business email for verification.
+  <Step title="Obtenha suas credenciais" icon="key">
+    Solicite seu par `API Key` + `API Secret` à equipe Keyspot. Essas credenciais identificam sua integração e definem seus limites de uso.
   </Step>
-  <Step title="Configure Properties" icon="home">
-    Add your real estate listings via the dashboard. Import from CSV or connect your existing database.
-
-````javascript
-// Example property data structure
-const property = {
-  id: "prop-123",
-  title: "Modern Apartment",
-  price: 250000,
-  location: "Downtown",
-  features: ["3 beds", "2 baths", "Garage"]
-};
-````
-
+  <Step title="Gere seu primeiro token" icon="lock">
+    Use o endpoint `POST /v1/auth/token` para trocar suas credenciais por um token JWT válido por 1 hora.
   </Step>
-  <Step title="Enable AI Features" icon="zap">
-    Activate AI recommendations in site settings. Test with sample traffic.
+  <Step title="Explore os endpoints" icon="search">
+    Consulte imóveis com `GET /v1/properties`, liste leads com `GET /v1/leads` ou crie novos leads com `POST /v1/leads`.
   </Step>
-  <Step title="Launch Website" icon="rocket">
-    Deploy your custom site and monitor leads in the CRM dashboard.
+  <Step title="Vá para produção" icon="rocket">
+    Siga o checklist de boas práticas e migre sua integração para o ambiente de produção.
   </Step>
 </Steps>
 
-## Next Steps
+## Princípios da API
 
-Ready to dive deeper? Choose your path:
+<ExpandableGroup>
+  <Expandable title="Seleção de campos (Field Selection)" default-open="true">
+    Você controla exatamente quais campos são retornados em cada requisição através do parâmetro `fields`. Isso reduz o payload e melhora a performance. Use `GET /v1/fields` para descobrir campos disponíveis.
+  </Expandable>
+  <Expandable title="Paginação offset-based" default-open="false">
+    Todas as listagens usam paginação com `page` e `limit`. O limite máximo por página é 100 itens. A resposta inclui metadados de paginação em `meta`.
+  </Expandable>
+  <Expandable title="Respostas padronizadas" default-open="false">
+    Toda resposta de sucesso segue o formato `{ "data": ..., "meta": ... }`. Erros retornam `{ "error": "...", "code": "..." }` com códigos programáticos consistentes.
+  </Expandable>
+  <Expandable title="Rate limiting" default-open="false">
+    Cada cliente tem um limite de requisições por minuto configurado pela Keyspot. Os headers `X-RateLimit-Limit` e `X-RateLimit-Remaining` indicam seu consumo. Ao exceder o limite, você recebe status `429`.
+  </Expandable>
+</ExpandableGroup>
 
-<Columns cols={2}>
-  <Card title="Quickstart Guide" icon="book-open" href="/quickstart">
-    Complete setup with detailed instructions and code examples.
+## Acesso rápido
+
+<Columns cols={3}>
+  <Card title="Quickstart" icon="zap" href="/comece-aqui/quickstart">
+    Sua primeira chamada em 5 minutos.
   </Card>
-  <Card title="CRM Documentation" icon="database" href="/crm">
-    Master lead tracking and automation.
+  <Card title="Autenticação" icon="lock" href="/comece-aqui/autenticacao">
+    Entenda o fluxo JWT de duas fases.
   </Card>
-  <Card title="AI Website Builder" icon="zap" href="/website">
-    Customize your intelligent site.
+  <Card title="API Reference" icon="code" href="/api-reference/introducao">
+    Documentação completa de todos os endpoints.
   </Card>
-  <Card title="API Reference" icon="code" href="/api">
-    Integrate programmatically.
+  <Card title="Dicionário de Dados" icon="database" href="/referencia/dicionario-dados">
+    Todas as entidades, campos e enumerações.
+  </Card>
+  <Card title="Boas Práticas" icon="check-circle" href="/guias/boas-praticas">
+    Paginação, retry, tratamento de erros e mais.
+  </Card>
+  <Card title="Postman Collection" icon="send" href="/collections/index">
+    Importe e teste todos os endpoints no Postman.
   </Card>
 </Columns>
-
-<Callout kind="tip">
-  Start with the <a href="/quickstart">Quickstart Guide</a> to see results fastest. Customize your dashboard at `https://dashboard.example.com` today.
-</Callout>

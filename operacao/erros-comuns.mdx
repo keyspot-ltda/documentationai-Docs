@@ -1,0 +1,194 @@
+---
+title: "Erros Comuns"
+description: "Diagnóstico e resolução dos erros mais frequentes ao integrar com a Keyspot Partner API."
+---
+
+## Formato de erro
+
+Todas as respostas de erro seguem o mesmo formato:
+
+```json
+{
+  "error": "Mensagem de erro legível",
+  "code": "CODIGO_PROGRAMATICO"
+}
+```
+
+Use o campo `code` para identificar o erro programaticamente e o campo `error` para exibir mensagens ao desenvolvedor.
+
+## Erros por código HTTP
+
+<ExpandableGroup>
+  <Expandable title="400 — Bad Request" default-open="true">
+    **Causa**: parâmetros inválidos ou ausentes na requisição.
+
+    ### VALIDATION_ERROR
+    Campos obrigatórios ausentes ou com formato inválido.
+
+    ```json
+    { "error": "fields: The \"fields\" parameter is required", "code": "VALIDATION_ERROR" }
+    ```
+
+    **Solução**: verifique se todos os campos obrigatórios estão presentes e com os tipos corretos. Para `POST /v1/leads`, os campos `name`, `email`, `phone` e `message` são obrigatórios.
+
+    ### INVALID_FIELDS
+    Campos solicitados no parâmetro `fields` não existem na entidade.
+
+    ```json
+    { "error": "Invalid fields: foo, bar", "code": "INVALID_FIELDS" }
+    ```
+
+    **Solução**: consulte `GET /v1/fields` para ver os campos disponíveis. Use os nomes exatos sem sub-campos (ex: `address`, não `address.street`).
+
+    ### INVALID_ENTITY
+    Entidade passada no endpoint `/v1/values` não existe.
+
+    ```json
+    { "error": "Invalid entity: foo. Use one of: properties, leads", "code": "INVALID_ENTITY" }
+    ```
+
+    **Solução**: use `properties` ou `leads` como entidade.
+
+    ### INVALID_FIELD
+    Campo passado no endpoint `/v1/values` não é consultável.
+
+    ```json
+    { "error": "Field \"title\" is not queryable for \"properties\". Queryable fields: status, operationType, propertyType, highlight", "code": "INVALID_FIELD" }
+    ```
+
+    **Solução**: consulte a lista de campos consultáveis no [Dicionário de Dados](/referencia/dicionario-dados#campos-consultáveis-para-valores-distintos).
+
+    ### MISSING_BODY
+    Requisição POST sem body.
+
+    ```json
+    { "error": "Request body is required", "code": "MISSING_BODY" }
+    ```
+
+    **Solução**: envie um body JSON válido com o header `Content-Type: application/json`.
+  </Expandable>
+
+  <Expandable title="401 — Unauthorized" default-open="false">
+    **Causa**: problema com credenciais ou token.
+
+    ### MISSING_CREDENTIALS
+    Headers de autenticação ausentes no endpoint de token.
+
+    ```json
+    { "error": "X-API-Key and X-API-Secret headers are required", "code": "MISSING_CREDENTIALS" }
+    ```
+
+    **Solução**: inclua os headers `X-API-Key` e `X-API-Secret` na requisição `POST /v1/auth/token`.
+
+    ### INVALID_API_KEY
+    API Key não encontrada no sistema.
+
+    ```json
+    { "error": "Invalid API key", "code": "INVALID_API_KEY" }
+    ```
+
+    **Solução**: verifique se a API Key está correta. Entre em contato com a Keyspot se o problema persistir.
+
+    ### INVALID_API_SECRET
+    API Secret não corresponde à API Key.
+
+    ```json
+    { "error": "Invalid API secret", "code": "INVALID_API_SECRET" }
+    ```
+
+    **Solução**: verifique se o API Secret está correto e corresponde à API Key informada.
+
+    ### MISSING_TOKEN
+    Header `Authorization` ausente em rota protegida.
+
+    ```json
+    { "error": "Authorization header with Bearer token is required", "code": "MISSING_TOKEN" }
+    ```
+
+    **Solução**: inclua o header `Authorization: Bearer SEU_TOKEN` em todas as rotas protegidas.
+
+    ### INVALID_TOKEN
+    Token JWT inválido, expirado ou malformado.
+
+    ```json
+    { "error": "Invalid or expired token", "code": "INVALID_TOKEN" }
+    ```
+
+    **Solução**: gere um novo token via `POST /v1/auth/token`. Tokens expiram em 1 hora.
+  </Expandable>
+
+  <Expandable title="403 — Forbidden" default-open="false">
+    **Causa**: acesso bloqueado por política de segurança.
+
+    ### API_DISABLED
+    O acesso à API está desabilitado para este cliente.
+
+    ```json
+    { "error": "API access disabled for this client", "code": "API_DISABLED" }
+    ```
+
+    **Solução**: entre em contato com a Keyspot para reativar o acesso.
+
+    ### IP_BLOCKED
+    O IP de origem da requisição não está na lista de IPs permitidos.
+
+    ```json
+    { "error": "IP not allowed", "code": "IP_BLOCKED" }
+    ```
+
+    **Solução**: solicite à Keyspot a inclusão do IP do seu servidor na lista de IPs permitidos.
+  </Expandable>
+
+  <Expandable title="404 — Not Found" default-open="false">
+    ### NOT_FOUND
+    Endpoint não existe.
+
+    ```json
+    { "error": "Not found", "code": "NOT_FOUND" }
+    ```
+
+    **Solução**: verifique o URL do endpoint. Todas as rotas começam com `/v1/`. Consulte a [API Reference](/api-reference/introducao) para a lista completa de endpoints.
+  </Expandable>
+
+  <Expandable title="429 — Too Many Requests" default-open="false">
+    ### RATE_LIMIT_EXCEEDED
+    Limite de requisições por minuto excedido.
+
+    ```json
+    { "error": "Rate limit exceeded", "code": "RATE_LIMIT_EXCEEDED" }
+    ```
+
+    **Solução**: aguarde o número de segundos indicado no header `Retry-After`. Monitore os headers `X-RateLimit-Limit` e `X-RateLimit-Remaining` para evitar atingir o limite. Implemente [retry com backoff exponencial](/guias/boas-praticas#retry-com-backoff-exponencial).
+  </Expandable>
+
+  <Expandable title="500 — Internal Server Error" default-open="false">
+    ### NO_DATABASE
+    Banco de dados do cliente não configurado.
+
+    ```json
+    { "error": "Client database not configured", "code": "NO_DATABASE" }
+    ```
+
+    **Solução**: entre em contato com a Keyspot. Este é um erro de configuração do lado do servidor.
+
+    ### INTERNAL_ERROR
+    Erro inesperado no servidor.
+
+    ```json
+    { "error": "Internal server error", "code": "INTERNAL_ERROR" }
+    ```
+
+    **Solução**: tente novamente com [retry e backoff exponencial](/guias/boas-praticas#retry-com-backoff-exponencial). Se o erro persistir, entre em contato com o [suporte](/operacao/suporte).
+  </Expandable>
+</ExpandableGroup>
+
+## Próximos passos
+
+<Columns cols={2}>
+  <Card title="Boas Práticas" icon="check-circle" href="/guias/boas-praticas">
+    Tratamento de erros, retry e checklist de produção.
+  </Card>
+  <Card title="Suporte" icon="headphones" href="/operacao/suporte">
+    Canais de contato e como abrir chamados.
+  </Card>
+</Columns>

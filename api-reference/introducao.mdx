@@ -1,0 +1,120 @@
+---
+title: "Visão Geral da API"
+description: "Visão geral da Keyspot Partner API: base URL, autenticação, formato de respostas, paginação e rate limiting."
+---
+
+## Base URL
+
+```
+https://partner-api.keyspot.app
+```
+
+Todas as rotas são prefixadas com `/v1/`.
+
+## Autenticação
+
+A API utiliza autenticação JWT em duas fases:
+
+1. **Obter token**: `POST /v1/auth/token` com headers `X-API-Key` e `X-API-Secret`
+2. **Usar token**: header `Authorization: Bearer SEU_TOKEN` em todas as rotas protegidas
+
+O token expira em **1 hora**. Veja detalhes em [Autenticação](/comece-aqui/autenticacao).
+
+## Formato de respostas
+
+### Sucesso (com paginação)
+
+```json
+{
+  "data": [...],
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "total": 150,
+    "totalPages": 8
+  }
+}
+```
+
+### Sucesso (sem paginação)
+
+```json
+{
+  "data": { ... }
+}
+```
+
+### Erro
+
+```json
+{
+  "error": "Mensagem de erro legível",
+  "code": "CODIGO_PROGRAMATICO"
+}
+```
+
+## Endpoints disponíveis
+
+| Método | Endpoint | Descrição | Auth |
+|--------|----------|-----------|------|
+| `GET` | `/health` | Health check | Não |
+| `POST` | `/v1/auth/token` | Gerar token JWT | Não* |
+| `GET` | `/v1/fields` | Listar campos disponíveis | Sim |
+| `GET` | `/v1/values/{entity}/{field}` | Valores distintos de um campo | Sim |
+| `GET` | `/v1/properties` | Listar imóveis | Sim |
+| `GET` | `/v1/leads` | Listar leads | Sim |
+| `POST` | `/v1/leads` | Criar lead | Sim |
+
+<Callout kind="info">
+  *O endpoint de token usa `X-API-Key` e `X-API-Secret` como headers, não Bearer token.
+</Callout>
+
+## Seleção de campos
+
+Os endpoints `GET /v1/properties` e `GET /v1/leads` exigem o parâmetro `fields` (obrigatório), que define quais campos são retornados na resposta.
+
+```bash
+# Retorna apenas code, title e pricing
+GET /v1/properties?fields=code,title,pricing
+```
+
+Campos agrupados (como `address`, `features`, `pricing`) retornam todos os seus sub-campos ao serem solicitados.
+
+## Paginação
+
+| Parâmetro | Tipo | Padrão | Máximo |
+|-----------|------|--------|--------|
+| `page` | integer | 1 | — |
+| `limit` | integer | 20 | 100 |
+
+## Filtros de data
+
+Disponíveis em `GET /v1/properties` e `GET /v1/leads`:
+
+| Parâmetro | Descrição |
+|-----------|-----------|
+| `createdAfter` | Registros criados após esta data (ISO 8601) |
+| `createdBefore` | Registros criados antes desta data |
+| `updatedAfter` | Registros atualizados após esta data |
+| `updatedBefore` | Registros atualizados antes desta data |
+
+## Rate limiting
+
+Cada cliente tem um limite de requisições por minuto. Os headers de resposta indicam o consumo:
+
+| Header | Descrição |
+|--------|-----------|
+| `X-RateLimit-Limit` | Limite máximo |
+| `X-RateLimit-Remaining` | Requisições restantes |
+| `Retry-After` | Segundos para aguardar (quando exceder) |
+
+## Próximos passos
+
+<Columns cols={2}>
+  <Card title="Quickstart" icon="zap" href="/comece-aqui/quickstart">
+    Faça sua primeira chamada em 5 minutos.
+  </Card>
+  <Card title="Postman Collection" icon="send" href="/collections/index">
+    Importe todos os endpoints no Postman.
+  </Card>
+</Columns>

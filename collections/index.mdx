@@ -1,0 +1,117 @@
+---
+title: "Postman Collection"
+description: "Importe a Postman Collection da Keyspot Partner API para testar todos os endpoints rapidamente."
+---
+
+## Visão geral
+
+Disponibilizamos uma coleção Postman completa com todos os endpoints da Partner API, incluindo exemplos de requisições e respostas.
+
+A coleção inclui:
+
+- **Health Check** — verificação de status
+- **Auth** — geração de token com salvamento automático
+- **Fields** — consulta de campos disponíveis
+- **Values** — consulta de valores distintos para filtros
+- **Properties** — listagem com diversos exemplos de filtros e campos
+- **Leads** — listagem com filtros e criação de leads
+
+## Como importar
+
+<Steps>
+  <Step title="Baixe os arquivos" icon="download">
+    Faça download dos arquivos da coleção e environment:
+
+    - [`Partner-API.postman_collection.json`](https://github.com/keyspot/partner-api/tree/main/postman/Partner-API.postman_collection.json) — Coleção com todos os endpoints
+    - [`Production.postman_environment.json`](https://github.com/keyspot/partner-api/tree/main/postman/Production.postman_environment.json) — Environment de produção
+  </Step>
+
+  <Step title="Importe no Postman" icon="upload">
+    1. Abra o Postman
+    2. Clique em **Import** (canto superior esquerdo)
+    3. Arraste ou selecione os dois arquivos JSON
+    4. Confirme a importação
+  </Step>
+
+  <Step title="Configure o environment" icon="settings">
+    1. Selecione o environment importado no dropdown do canto superior direito
+    2. Clique no ícone de olho para editar as variáveis
+    3. Preencha:
+
+    | Variável | Valor |
+    |----------|-------|
+    | `base_url` | `https://partner-api.keyspot.app` |
+    | `api_key` | Sua API Key |
+    | `api_secret` | Seu API Secret |
+
+    A variável `access_token` é preenchida automaticamente ao executar o endpoint de token.
+  </Step>
+
+  <Step title="Gere o token" icon="lock">
+    1. Abra a pasta **Auth** na coleção
+    2. Execute a requisição **Obter Token**
+    3. O token é salvo automaticamente na variável `access_token` (via script de test)
+    4. Todas as demais requisições usam esse token automaticamente
+  </Step>
+
+  <Step title="Teste os endpoints" icon="play">
+    Explore os endpoints organizados por pasta:
+
+    - **Properties**: exemplos com campos básicos, endereço, fotos, filtros por status/operação/tipo/datas
+    - **Leads**: listagem com filtros e criação (básico, completo, via portal)
+    - **Fields**: metadados de campos disponíveis
+    - **Values**: valores distintos para filtros (status, operationType, propertyType, etc.)
+  </Step>
+</Steps>
+
+## Variáveis de environment
+
+| Variável | Descrição | Preenchimento |
+|----------|-----------|---------------|
+| `base_url` | URL base da API | Manual |
+| `api_key` | Sua API Key | Manual |
+| `api_secret` | Seu API Secret | Manual |
+| `access_token` | Token JWT | Automático (via script) |
+
+<Callout kind="tip">
+  Ao executar o endpoint **Obter Token**, o script de test salva o token automaticamente. Você não precisa copiar e colar o token manualmente.
+</Callout>
+
+## Exemplos incluídos
+
+### Properties
+
+| Requisição | Descrição |
+|------------|-----------|
+| Listar imóveis (campos básicos) | `code,title,status,operationType,propertyType` |
+| Listar imóveis (com endereço e preço) | `code,title,address,pricing,features` |
+| Listar imóveis (com fotos) | `code,title,photos` |
+| Listar imóveis (todos os campos) | Todos os 18 campos |
+| Filtrar por status | `status=AVAILABLE` |
+| Filtrar por operação | `operation=SALE` |
+| Filtrar por tipo de imóvel | `type=Apartamento` |
+| Filtros de data | `createdAfter`, `createdBefore`, `updatedAfter`, `updatedBefore` |
+| Filtros combinados | status + operação + tipo + datas |
+
+### Leads
+
+| Requisição | Descrição |
+|------------|-----------|
+| Listar leads | Campos principais com paginação |
+| Listar leads (todos os campos) | Todos os 12 campos |
+| Filtrar por status | `status=NEW_LEAD` |
+| Filtros de data | `createdAfter`, `updatedAfter`, ranges |
+| Criar lead (básico) | Campos obrigatórios apenas |
+| Criar lead (completo) | Com `propertyCode`, `source`, `trafficOrigin` |
+| Criar lead (via portal) | Com `source=PORTAL_VIVAREAL` |
+
+## Próximos passos
+
+<Columns cols={2}>
+  <Card title="Quickstart" icon="zap" href="/comece-aqui/quickstart">
+    Sua primeira chamada em 5 minutos.
+  </Card>
+  <Card title="API Reference" icon="code" href="/api-reference/introducao">
+    Documentação interativa de todos os endpoints.
+  </Card>
+</Columns>

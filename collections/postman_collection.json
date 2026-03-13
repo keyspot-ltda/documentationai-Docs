@@ -1,0 +1,531 @@
+{
+	"info": {
+		"_postman_id": "keyspot-partner-api",
+		"name": "Keyspot Partner API",
+		"description": "API de integração para parceiros da Keyspot. Autenticação JWT em 2 fases: primeiro obtenha o token via POST /v1/auth/token, depois use-o como Bearer nas demais rotas.\n\nFiltros de data disponíveis em Properties e Leads: createdAfter, createdBefore, updatedAfter, updatedBefore (formato ISO 8601).",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{access_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"variable": [],
+	"item": [
+		{
+			"name": "Health",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": ["{{base_url}}"],
+							"path": ["health"]
+						},
+						"description": "Verifica se a API está online. Não requer autenticação."
+					},
+					"response": [
+						{
+							"name": "200 - OK",
+							"status": "OK",
+							"code": 200,
+							"header": [{ "key": "Content-Type", "value": "application/json" }],
+							"body": "{\n  \"status\": \"ok\",\n  \"timestamp\": \"2026-03-13T10:00:00.000Z\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Obter Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"type": "text/javascript",
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const json = pm.response.json();",
+									"    if (json.data && json.data.token) {",
+									"        pm.environment.set('access_token', json.data.token);",
+									"        console.log('Token salvo automaticamente!');",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [
+							{
+								"key": "X-API-Key",
+								"value": "{{api_key}}",
+								"description": "Chave de API do parceiro"
+							},
+							{
+								"key": "X-API-Secret",
+								"value": "{{api_secret}}",
+								"description": "Secret de API do parceiro"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/v1/auth/token",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "auth", "token"]
+						},
+						"description": "Fase 1 da autenticação. Envia as credenciais (X-API-Key e X-API-Secret) e recebe um JWT válido por 1 hora.\n\nO token é salvo automaticamente na variável access_token."
+					},
+					"response": [
+						{
+							"name": "200 - Token gerado",
+							"status": "OK",
+							"code": 200,
+							"header": [{ "key": "Content-Type", "value": "application/json" }],
+							"body": "{\n  \"data\": {\n    \"token\": \"eyJhbGciOiJIUzI1NiIs...\",\n    \"expiresIn\": 3600,\n    \"tokenType\": \"Bearer\"\n  }\n}"
+						},
+						{
+							"name": "401 - Credenciais ausentes",
+							"status": "Unauthorized",
+							"code": 401,
+							"header": [{ "key": "Content-Type", "value": "application/json" }],
+							"body": "{\n  \"error\": \"X-API-Key and X-API-Secret headers are required\",\n  \"code\": \"MISSING_CREDENTIALS\"\n}"
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Fields",
+			"item": [
+				{
+					"name": "Listar campos disponíveis",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/fields",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "fields"]
+						},
+						"description": "Retorna todos os campos disponíveis para as entidades properties e leads."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Values",
+			"item": [
+				{
+					"name": "Properties - status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/values/properties/status",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "values", "properties", "status"]
+						},
+						"description": "Valores distintos do campo status de properties."
+					},
+					"response": []
+				},
+				{
+					"name": "Properties - operationType",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/values/properties/operationType",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "values", "properties", "operationType"]
+						},
+						"description": "Valores distintos do campo operationType de properties."
+					},
+					"response": []
+				},
+				{
+					"name": "Properties - propertyType",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/values/properties/propertyType",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "values", "properties", "propertyType"]
+						},
+						"description": "Tipos de imóvel cadastrados (ex: Apartamento, Casa)."
+					},
+					"response": []
+				},
+				{
+					"name": "Properties - highlight",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/values/properties/highlight",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "values", "properties", "highlight"]
+						},
+						"description": "Níveis de destaque disponíveis para imóveis."
+					},
+					"response": []
+				},
+				{
+					"name": "Leads - status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/values/leads/status",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "values", "leads", "status"]
+						},
+						"description": "Valores distintos do campo status de leads."
+					},
+					"response": []
+				},
+				{
+					"name": "Leads - source",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/values/leads/source",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "values", "leads", "source"]
+						},
+						"description": "Fontes de lead disponíveis."
+					},
+					"response": []
+				},
+				{
+					"name": "Leads - priority",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/values/leads/priority",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "values", "leads", "priority"]
+						},
+						"description": "Prioridades de lead disponíveis."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Properties",
+			"item": [
+				{
+					"name": "Listar imóveis (campos básicos)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/properties?fields=code,title,status,operationType,propertyType&page=1&limit=20",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "properties"],
+							"query": [
+								{ "key": "fields", "value": "code,title,status,operationType,propertyType" },
+								{ "key": "page", "value": "1" },
+								{ "key": "limit", "value": "20" }
+							]
+						},
+						"description": "Lista imóveis publicados com campos básicos."
+					},
+					"response": [
+						{
+							"name": "200 - Imóveis listados",
+							"status": "OK",
+							"code": 200,
+							"header": [{ "key": "Content-Type", "value": "application/json" }],
+							"body": "{\n  \"data\": [\n    {\n      \"code\": \"PROP-001\",\n      \"title\": \"Apartamento Moderno\",\n      \"status\": \"AVAILABLE\",\n      \"operationType\": \"SALE\",\n      \"propertyType\": \"Apartamento\"\n    }\n  ],\n  \"meta\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"total\": 50,\n    \"totalPages\": 3\n  }\n}"
+						}
+					]
+				},
+				{
+					"name": "Listar imóveis (com endereço e preço)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/properties?fields=code,title,address,pricing,features&page=1&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "properties"],
+							"query": [
+								{ "key": "fields", "value": "code,title,address,pricing,features" },
+								{ "key": "page", "value": "1" },
+								{ "key": "limit", "value": "10" }
+							]
+						},
+						"description": "Lista imóveis com endereço completo, preços e características."
+					},
+					"response": []
+				},
+				{
+					"name": "Listar imóveis (com fotos)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/properties?fields=code,title,photos&page=1&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "properties"],
+							"query": [
+								{ "key": "fields", "value": "code,title,photos" },
+								{ "key": "page", "value": "1" },
+								{ "key": "limit", "value": "10" }
+							]
+						},
+						"description": "Lista imóveis com fotos."
+					},
+					"response": []
+				},
+				{
+					"name": "Filtrar por status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/properties?fields=code,title,status,pricing&status=AVAILABLE",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "properties"],
+							"query": [
+								{ "key": "fields", "value": "code,title,status,pricing" },
+								{ "key": "status", "value": "AVAILABLE" }
+							]
+						},
+						"description": "Filtra imóveis por status."
+					},
+					"response": []
+				},
+				{
+					"name": "Filtrar por operação (Venda)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/properties?fields=code,title,operationType,pricing&operation=SALE",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "properties"],
+							"query": [
+								{ "key": "fields", "value": "code,title,operationType,pricing" },
+								{ "key": "operation", "value": "SALE" }
+							]
+						},
+						"description": "Filtra imóveis por tipo de operação."
+					},
+					"response": []
+				},
+				{
+					"name": "Filtrar por tipo de imóvel",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/properties?fields=code,title,propertyType,features&type=Apartamento",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "properties"],
+							"query": [
+								{ "key": "fields", "value": "code,title,propertyType,features" },
+								{ "key": "type", "value": "Apartamento" }
+							]
+						},
+						"description": "Filtra imóveis por tipo (case-insensitive)."
+					},
+					"response": []
+				},
+				{
+					"name": "Sincronização incremental (updatedAfter)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/properties?fields=code,title,status,updatedAt&updatedAfter=2026-03-01T00:00:00Z",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "properties"],
+							"query": [
+								{ "key": "fields", "value": "code,title,status,updatedAt" },
+								{ "key": "updatedAfter", "value": "2026-03-01T00:00:00Z" }
+							]
+						},
+						"description": "Imóveis atualizados recentemente. Útil para sincronização incremental."
+					},
+					"response": []
+				},
+				{
+					"name": "Filtros combinados",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/properties?fields=code,title,address,pricing,features&status=AVAILABLE&operation=SALE&type=Apartamento&page=1&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "properties"],
+							"query": [
+								{ "key": "fields", "value": "code,title,address,pricing,features" },
+								{ "key": "status", "value": "AVAILABLE" },
+								{ "key": "operation", "value": "SALE" },
+								{ "key": "type", "value": "Apartamento" },
+								{ "key": "page", "value": "1" },
+								{ "key": "limit", "value": "10" }
+							]
+						},
+						"description": "Combina filtros de status + operação + tipo."
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Leads",
+			"item": [
+				{
+					"name": "Listar leads",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/leads?fields=id,name,email,phone,status,source,priority,createdAt&page=1&limit=20",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "leads"],
+							"query": [
+								{ "key": "fields", "value": "id,name,email,phone,status,source,priority,createdAt" },
+								{ "key": "page", "value": "1" },
+								{ "key": "limit", "value": "20" }
+							]
+						},
+						"description": "Lista leads com campos principais."
+					},
+					"response": [
+						{
+							"name": "200 - Leads listados",
+							"status": "OK",
+							"code": 200,
+							"header": [{ "key": "Content-Type", "value": "application/json" }],
+							"body": "{\n  \"data\": [\n    {\n      \"id\": \"clx1abc23def456\",\n      \"name\": \"João Silva\",\n      \"email\": \"joao@example.com\",\n      \"phone\": \"11999999999\",\n      \"status\": \"NEW_LEAD\",\n      \"source\": \"WEBSITE\",\n      \"priority\": \"MEDIUM\",\n      \"createdAt\": \"2026-03-13T10:30:00.000Z\"\n    }\n  ],\n  \"meta\": {\n    \"page\": 1,\n    \"limit\": 20,\n    \"total\": 150,\n    \"totalPages\": 8\n  }\n}"
+						}
+					]
+				},
+				{
+					"name": "Filtrar leads por status",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/leads?fields=name,email,phone,status&status=NEW_LEAD",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "leads"],
+							"query": [
+								{ "key": "fields", "value": "name,email,phone,status" },
+								{ "key": "status", "value": "NEW_LEAD" }
+							]
+						},
+						"description": "Filtra leads por status."
+					},
+					"response": []
+				},
+				{
+					"name": "Leads recentes (createdAfter)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/v1/leads?fields=name,email,source,createdAt&createdAfter=2026-03-01T00:00:00Z",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "leads"],
+							"query": [
+								{ "key": "fields", "value": "name,email,source,createdAt" },
+								{ "key": "createdAfter", "value": "2026-03-01T00:00:00Z" }
+							]
+						},
+						"description": "Leads criados recentemente."
+					},
+					"response": []
+				},
+				{
+					"name": "Criar lead (básico)",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"João Silva\",\n  \"email\": \"joao@example.com\",\n  \"phone\": \"11999999999\",\n  \"message\": \"Tenho interesse neste imóvel, gostaria de mais informações.\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{base_url}}/v1/leads",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "leads"]
+						},
+						"description": "Cria um novo lead com campos obrigatórios. Source padrão: API."
+					},
+					"response": [
+						{
+							"name": "201 - Lead criado",
+							"status": "Created",
+							"code": 201,
+							"header": [{ "key": "Content-Type", "value": "application/json" }],
+							"body": "{\n  \"data\": {\n    \"id\": \"clx1abc23def456\",\n    \"name\": \"João Silva\",\n    \"email\": \"joao@example.com\",\n    \"phone\": \"11999999999\",\n    \"message\": \"Tenho interesse neste imóvel, gostaria de mais informações.\",\n    \"source\": \"API\",\n    \"status\": \"NEW_LEAD\",\n    \"priority\": \"MEDIUM\",\n    \"propertyId\": null,\n    \"interestedPropertyTitle\": null,\n    \"createdAt\": \"2026-03-13T10:30:00.000Z\",\n    \"updatedAt\": \"2026-03-13T10:30:00.000Z\"\n  }\n}"
+						}
+					]
+				},
+				{
+					"name": "Criar lead (completo com imóvel)",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Maria Santos\",\n  \"email\": \"maria@example.com\",\n  \"phone\": \"21988888888\",\n  \"message\": \"Vi este apartamento no site e gostaria de agendar uma visita.\",\n  \"source\": \"WEBSITE\",\n  \"propertyCode\": \"PROP-001\",\n  \"interestedPropertyTitle\": \"Apartamento Moderno - Centro\",\n  \"interestedPropertyLink\": \"https://site.com.br/imovel/prop-001\",\n  \"trafficOrigin\": \"google-ads-campanha-verao\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{base_url}}/v1/leads",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "leads"]
+						},
+						"description": "Cria um lead com todos os campos opcionais, incluindo vinculação a imóvel."
+					},
+					"response": []
+				},
+				{
+					"name": "Criar lead (via portal)",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Carlos Oliveira\",\n  \"email\": \"carlos@example.com\",\n  \"phone\": \"31977777777\",\n  \"message\": \"Encontrei este imóvel no VivaReal, quero mais detalhes.\",\n  \"source\": \"PORTAL_VIVAREAL\",\n  \"propertyCode\": \"PROP-002\"\n}",
+							"options": { "raw": { "language": "json" } }
+						},
+						"url": {
+							"raw": "{{base_url}}/v1/leads",
+							"host": ["{{base_url}}"],
+							"path": ["v1", "leads"]
+						},
+						"description": "Cria um lead vindo de portal imobiliário."
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

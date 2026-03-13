@@ -1,0 +1,255 @@
+---
+title: "Dicionário de Dados"
+description: "Referência completa de todas as entidades, campos, tipos e enumerações disponíveis na Keyspot Partner API."
+---
+
+## Visão geral
+
+Este dicionário documenta todas as entidades e campos expostos pela Partner API. Use-o como referência ao construir sua integração.
+
+<Callout kind="tip">
+  Use o endpoint `GET /v1/fields` para consultar os campos disponíveis programaticamente, e `GET /v1/values/{entity}/{field}` para descobrir os valores possíveis de cada filtro.
+</Callout>
+
+## Property (Imóvel)
+
+Representa um imóvel publicado na plataforma Keyspot. Retornado por `GET /v1/properties`.
+
+### Campos simples
+
+| Campo | Tipo | Nullable | Descrição |
+|-------|------|----------|-----------|
+| `id` | string | Não | Identificador único (UUID) |
+| `code` | string | Sim | Código do imóvel na imobiliária |
+| `title` | string | Não | Título do imóvel |
+| `description` | string | Não | Descrição detalhada |
+| `operationType` | enum | Não | Tipo de operação (`SALE`, `RENT`, `SEASONAL`) |
+| `status` | enum | Não | Status do imóvel |
+| `propertyType` | string | Sim | Tipo de imóvel (ex: Apartamento, Casa) |
+| `highlight` | string | Não | Nível de destaque |
+| `exclusive` | boolean | Não | Se é exclusivo da imobiliária |
+| `isPublished` | boolean | Não | Se está publicado (sempre `true` na API) |
+| `createdAt` | string (ISO 8601) | Não | Data de criação |
+| `updatedAt` | string (ISO 8601) | Não | Data da última atualização |
+
+### Campos agrupados
+
+Ao solicitar um campo agrupado (ex: `address`), todos os sub-campos são retornados.
+
+#### address
+
+| Sub-campo | Tipo | Nullable | Descrição |
+|-----------|------|----------|-----------|
+| `street` | string | Sim | Nome da rua |
+| `number` | string | Sim | Número |
+| `complement` | string | Sim | Complemento (Apto, Sala, etc.) |
+| `neighborhood` | string | Sim | Bairro |
+| `city` | string | Sim | Cidade |
+| `state` | string | Sim | Estado (nome completo) |
+| `uf` | string | Sim | Sigla do estado (SP, RJ, etc.) |
+| `cep` | string | Sim | CEP |
+
+#### coordinates
+
+| Sub-campo | Tipo | Nullable | Descrição |
+|-----------|------|----------|-----------|
+| `latitude` | number | Sim | Latitude |
+| `longitude` | number | Sim | Longitude |
+
+#### features
+
+| Sub-campo | Tipo | Nullable | Descrição |
+|-----------|------|----------|-----------|
+| `totalArea` | number | Sim | Área total em m² |
+| `builtArea` | number | Sim | Área construída em m² |
+| `bedrooms` | integer | Sim | Número de quartos |
+| `bathrooms` | integer | Sim | Número de banheiros |
+| `suites` | integer | Sim | Número de suítes |
+| `parkingSpaces` | integer | Sim | Vagas de garagem |
+| `floor` | integer | Sim | Andar do imóvel |
+| `totalFloors` | integer | Sim | Total de andares do edifício |
+| `isFurnished` | boolean | Não | Se é mobiliado |
+
+#### pricing
+
+| Sub-campo | Tipo | Nullable | Descrição |
+|-----------|------|----------|-----------|
+| `salePrice` | number | Sim | Preço de venda (BRL) |
+| `rentalPrice` | number | Sim | Aluguel mensal (BRL) |
+| `condominiumFee` | number | Sim | Condomínio mensal (BRL) |
+| `iptu` | number | Sim | IPTU anual (BRL) |
+
+#### financing
+
+| Sub-campo | Tipo | Nullable | Descrição |
+|-----------|------|----------|-----------|
+| `acceptsFinancing` | boolean | Não | Se aceita financiamento |
+
+#### photos
+
+Array de objetos, ordenado por `order`.
+
+| Sub-campo | Tipo | Nullable | Descrição |
+|-----------|------|----------|-----------|
+| `id` | string | Não | ID da foto |
+| `url` | string | Não | URL da imagem |
+| `alt` | string | Sim | Texto alternativo |
+| `order` | integer | Não | Ordem de exibição |
+| `isMain` | boolean | Não | Se é a foto principal |
+
+## Lead (Contato)
+
+Representa um lead (contato interessado) capturado pela plataforma. Retornado por `GET /v1/leads` e `POST /v1/leads`.
+
+### Campos
+
+| Campo | Tipo | Nullable | Descrição |
+|-------|------|----------|-----------|
+| `id` | string | Não | Identificador único (UUID) |
+| `name` | string | Não | Nome do contato |
+| `email` | string | Não | E-mail do contato |
+| `phone` | string | Não | Telefone do contato |
+| `message` | string | Não | Mensagem enviada pelo contato |
+| `source` | enum | Não | Fonte de origem do lead |
+| `status` | enum | Não | Status no funil de vendas |
+| `priority` | enum | Não | Prioridade do lead |
+| `propertyId` | string | Sim | ID do imóvel vinculado |
+| `interestedPropertyTitle` | string | Sim | Título do imóvel de interesse |
+| `createdAt` | string (ISO 8601) | Não | Data de criação |
+| `updatedAt` | string (ISO 8601) | Não | Data da última atualização |
+
+### Campos de criação (POST /v1/leads)
+
+| Campo | Obrigatório | Tipo | Descrição |
+|-------|-------------|------|-----------|
+| `name` | Sim | string | Nome do contato |
+| `email` | Sim | string (email) | E-mail do contato |
+| `phone` | Sim | string | Telefone do contato |
+| `message` | Sim | string | Mensagem do contato |
+| `source` | Não | enum | Fonte de origem (padrão: `API`) |
+| `propertyCode` | Não | string | Código do imóvel para vinculação automática |
+| `interestedPropertyTitle` | Não | string | Título do imóvel de interesse |
+| `interestedPropertyLink` | Não | string | Link do imóvel de interesse |
+| `trafficOrigin` | Não | string | Origem do tráfego (UTM, campanha) |
+
+<Callout kind="info">
+  Se `propertyCode` for informado e o imóvel existir, o lead é vinculado automaticamente. O `interestedPropertyTitle` é preenchido com o título do imóvel encontrado, a menos que você forneça um valor explícito.
+</Callout>
+
+## Enumerações
+
+### PropertyStatus
+
+| Valor | Descrição |
+|-------|-----------|
+| `AVAILABLE` | Disponível para negociação |
+| `SOLD` | Vendido |
+| `RENTED` | Alugado |
+| `RESERVED` | Reservado |
+| `UNAVAILABLE` | Indisponível |
+
+### OperationType
+
+| Valor | Descrição |
+|-------|-----------|
+| `SALE` | Venda |
+| `RENT` | Aluguel |
+| `SEASONAL` | Temporada |
+
+### LeadStatus
+
+| Valor | Descrição |
+|-------|-----------|
+| `NEW_LEAD` | Lead novo, ainda não contatado |
+| `IN_SERVICE` | Em atendimento |
+| `VISIT_SCHEDULED` | Visita agendada |
+| `VISIT_COMPLETED` | Visita realizada |
+| `PROPOSAL_MADE` | Proposta enviada |
+| `CONVERTED` | Convertido (negócio fechado) |
+| `LOST` | Perdido |
+
+### LeadSource
+
+| Valor | Descrição |
+|-------|-----------|
+| `WEBSITE` | Site da imobiliária |
+| `WHATSAPP` | WhatsApp |
+| `PHONE` | Telefone |
+| `EMAIL` | E-mail |
+| `SOCIAL_MEDIA` | Redes sociais (genérico) |
+| `INSTAGRAM` | Instagram |
+| `FACEBOOK` | Facebook |
+| `PORTAL` | Portal imobiliário (genérico) |
+| `PORTAL_VIVAREAL` | Portal VivaReal |
+| `PORTAL_ZAPIMOVEIS` | Portal ZAP Imóveis |
+| `PORTAL_OLX` | Portal OLX |
+| `PORTAL_IMOVELWEB` | Portal ImovelWeb |
+| `PORTAL_CHAVESNAMAO` | Portal Chaves na Mão |
+| `META_ADS` | Meta Ads (Facebook/Instagram Ads) |
+| `GOOGLE_ADS` | Google Ads |
+| `RD_STATION` | RD Station |
+| `REFERRAL` | Indicação |
+| `REAL_ESTATE` | Imobiliária (presencial) |
+| `OTHER` | Outra fonte |
+| `API` | Criado via API (padrão) |
+
+### LeadPriority
+
+| Valor | Descrição |
+|-------|-----------|
+| `LOW` | Baixa prioridade |
+| `MEDIUM` | Média prioridade (padrão ao criar) |
+| `HIGH` | Alta prioridade |
+
+## Respostas padronizadas
+
+### Sucesso com paginação
+
+```json
+{
+  "data": [...],
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "total": 150,
+    "totalPages": 8
+  }
+}
+```
+
+### Sucesso sem paginação
+
+```json
+{
+  "data": { ... }
+}
+```
+
+### Erro
+
+```json
+{
+  "error": "Mensagem de erro legível",
+  "code": "CODIGO_PROGRAMATICO"
+}
+```
+
+## Campos consultáveis para valores distintos
+
+Use `GET /v1/values/{entity}/{field}` para consultar os valores disponíveis:
+
+| Entidade | Campo consultável |
+|----------|-------------------|
+| `properties` | `status`, `operationType`, `propertyType`, `highlight` |
+| `leads` | `status`, `source`, `priority` |
+
+## Próximos passos
+
+<Columns cols={2}>
+  <Card title="API Reference" icon="code" href="/api-reference/introducao">
+    Documentação interativa de todos os endpoints.
+  </Card>
+  <Card title="Erros Comuns" icon="alert-triangle" href="/operacao/erros-comuns">
+    Diagnóstico e resolução de erros frequentes.
+  </Card>
+</Columns>

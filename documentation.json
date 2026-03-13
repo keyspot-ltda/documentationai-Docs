@@ -1,58 +1,80 @@
 {
-  "name": "Keyspot",
+  "name": "Keyspot Partner API",
   "colors": {
     "light": {
-      "brand": "#511386",
-      "heading": "undefined",
-      "text": "undefined"
+      "brand": "#511386"
     },
     "dark": {
-      "brand": "#AB67E4",
-      "heading": "undefined",
-      "text": "undefined"
+      "brand": "#AB67E4"
     }
   },
   "navigation": {
     "tabs": [
       {
-        "tab": "Documentation",
+        "tab": "Guias",
         "icon": "book",
         "groups": [
           {
-            "group": "Getting Started",
+            "group": "Inicio",
+            "icon": "home",
+            "pages": [
+              {
+                "title": "Introducao",
+                "path": "introduction",
+                "icon": "home"
+              }
+            ]
+          },
+          {
+            "group": "Comece Aqui",
             "icon": "rocket",
             "pages": [
               {
-                "title": "Introduction",
-                "path": "introduction",
-                "icon": "home"
+                "title": "Quickstart",
+                "path": "comece-aqui/quickstart",
+                "icon": "zap"
               },
               {
-                "title": "Quickstart",
-                "path": "quickstart",
-                "icon": "zap"
+                "title": "Autenticacao",
+                "path": "comece-aqui/autenticacao",
+                "icon": "lock"
               }
             ]
           },
           {
-            "group": "Core Concepts",
-            "icon": "compass",
+            "group": "Integracao",
+            "icon": "plug",
             "pages": [
               {
-                "title": "Features",
-                "path": "features",
-                "icon": "file-text"
+                "title": "Fluxo de Integracao",
+                "path": "guias/fluxo-integracao",
+                "icon": "git-branch"
+              },
+              {
+                "title": "Boas Praticas",
+                "path": "guias/boas-praticas",
+                "icon": "check-circle"
               }
             ]
           },
           {
-            "group": "Advanced",
-            "icon": "puzzle",
+            "group": "Referencia",
+            "icon": "database",
             "pages": [
               {
-                "title": "Integrations",
-                "path": "integrations",
-                "icon": "plug"
+                "title": "Dicionario de Dados",
+                "path": "referencia/dicionario-dados",
+                "icon": "book-open"
+              },
+              {
+                "title": "Erros Comuns",
+                "path": "operacao/erros-comuns",
+                "icon": "alert-triangle"
+              },
+              {
+                "title": "Suporte",
+                "path": "operacao/suporte",
+                "icon": "headphones"
               }
             ]
           }
@@ -63,53 +85,31 @@
         "icon": "code",
         "groups": [
           {
+            "group": "Visao Geral",
+            "icon": "eye",
+            "pages": [
+              {
+                "title": "Introducao",
+                "path": "api-reference/introducao",
+                "icon": "info"
+              }
+            ]
+          },
+          {
             "group": "Endpoints",
-            "openapi": "api-reference/openapi.yaml",
+            "openapi": "api-reference/openapi.json",
             "pages": []
           }
         ]
       },
       {
-        "tab": "Help Center",
-        "icon": "help-circle",
+        "tab": "Collections",
+        "icon": "folder",
         "pages": [
           {
-            "title": "Help Center",
-            "path": "help-center",
-            "icon": "home"
-          },
-          {
-            "group": "FAQs",
-            "icon": "help-circle",
-            "expandable": false,
-            "pages": [
-              {
-                "title": "How to Create Project",
-                "path": "help-center/faq/how-to-create-project"
-              }
-            ]
-          },
-          {
-            "group": "Troubleshooting",
-            "icon": "alert-triangle",
-            "expandable": false,
-            "pages": [
-              {
-                "title": "Cannot Access Dashboard",
-                "path": "help-center/troubleshooting/cannot-access-dashboard"
-              }
-            ]
-          },
-          {
-            "group": "Guides",
-            "icon": "book-open",
-            "expandable": false,
-            "pages": [
-              {
-                "title": "Organize Pages",
-                "path": "help-center/guides/organize-pages"
-              }
-            ]
+            "title": "Postman Collection",
+            "path": "collections/index",
+            "icon": "send"
           }
         ]
       },
@@ -118,7 +118,7 @@
         "icon": "clock",
         "pages": [
           {
-            "title": "Release History",
+            "title": "Historico de Versoes",
             "path": "changelog",
             "icon": "history"
           }

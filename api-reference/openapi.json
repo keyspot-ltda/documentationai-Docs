@@ -1,0 +1,1270 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Keyspot Partner API",
+    "version": "1.0.0",
+    "description": "API de integração para parceiros da Keyspot. Permite consultar imóveis, gerenciar leads e acessar metadados do sistema imobiliário.\n\nA autenticação é feita em duas fases: primeiro você obtém um token JWT via credenciais (API Key + API Secret), depois utiliza esse token como Bearer nas rotas protegidas.\n\nTodas as respostas seguem o formato padronizado com `data` e `meta` (quando paginado)."
+  },
+  "servers": [
+    {
+      "url": "https://partner-api.keyspot.app",
+      "description": "Produção"
+    }
+  ],
+  "tags": [
+    {
+      "name": "Auth",
+      "description": "Autenticação e geração de token JWT"
+    },
+    {
+      "name": "Properties",
+      "description": "Consulta de imóveis publicados"
+    },
+    {
+      "name": "Leads",
+      "description": "Gestão de leads (listagem e criação)"
+    },
+    {
+      "name": "Fields",
+      "description": "Metadados dos campos disponíveis por entidade"
+    },
+    {
+      "name": "Values",
+      "description": "Valores distintos disponíveis para filtros"
+    },
+    {
+      "name": "Health",
+      "description": "Verificação de status da API"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "healthCheck",
+        "summary": "Verificar status da API",
+        "description": "Retorna o status de funcionamento da API. Não requer autenticação.",
+        "tags": ["Health"],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "API online e funcionando",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "example": "ok"
+                    },
+                    "timestamp": {
+                      "type": "string",
+                      "format": "date-time",
+                      "example": "2026-03-13T10:00:00.000Z"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/token": {
+      "post": {
+        "operationId": "createToken",
+        "summary": "Gerar token de acesso",
+        "description": "Fase 1 da autenticação. Envia as credenciais do parceiro via headers `X-API-Key` e `X-API-Secret` e recebe um token JWT válido por 1 hora.\n\nO token retornado deve ser utilizado como `Bearer` no header `Authorization` de todas as rotas protegidas.",
+        "tags": ["Auth"],
+        "security": [],
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": true,
+            "description": "Chave de API do parceiro, fornecida pela Keyspot",
+            "schema": {
+              "type": "string",
+              "example": "ks_partner_abc123def456"
+            }
+          },
+          {
+            "name": "X-API-Secret",
+            "in": "header",
+            "required": true,
+            "description": "Secret de API do parceiro, fornecido pela Keyspot",
+            "schema": {
+              "type": "string",
+              "example": "ks_secret_xyz789"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Token gerado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/TokenResponse"
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                    "expiresIn": 3600,
+                    "tokenType": "Bearer"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Credenciais inválidas ou ausentes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "missing_credentials": {
+                    "summary": "Credenciais ausentes",
+                    "value": {
+                      "error": "X-API-Key and X-API-Secret headers are required",
+                      "code": "MISSING_CREDENTIALS"
+                    }
+                  },
+                  "invalid_key": {
+                    "summary": "API Key inválida",
+                    "value": {
+                      "error": "Invalid API key",
+                      "code": "INVALID_API_KEY"
+                    }
+                  },
+                  "invalid_secret": {
+                    "summary": "API Secret inválido",
+                    "value": {
+                      "error": "Invalid API secret",
+                      "code": "INVALID_API_SECRET"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Acesso bloqueado",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "api_disabled": {
+                    "summary": "API desabilitada para este cliente",
+                    "value": {
+                      "error": "API access disabled for this client",
+                      "code": "API_DISABLED"
+                    }
+                  },
+                  "ip_blocked": {
+                    "summary": "IP não permitido",
+                    "value": {
+                      "error": "IP not allowed",
+                      "code": "IP_BLOCKED"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Client database not configured",
+                  "code": "NO_DATABASE"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/properties": {
+      "get": {
+        "operationId": "listProperties",
+        "summary": "Listar imóveis",
+        "description": "Retorna uma lista paginada de imóveis publicados. Você controla quais campos são retornados através do parâmetro `fields` (obrigatório).\n\nCampos simples como `title`, `status` retornam valores diretos. Campos agrupados como `address`, `features`, `pricing` retornam objetos com sub-campos.\n\nSuporta filtros por status, tipo de operação, tipo de imóvel e datas de criação/atualização.",
+        "tags": ["Properties"],
+        "parameters": [
+          {
+            "name": "fields",
+            "in": "query",
+            "required": true,
+            "description": "Campos a serem retornados, separados por vírgula. Use `GET /v1/fields` para consultar campos disponíveis. Exemplo: `code,title,status,pricing,address`",
+            "schema": {
+              "type": "string",
+              "example": "code,title,status,operationType,pricing"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Número da página (começa em 1)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Quantidade de itens por página (máximo 100)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Filtrar por status do imóvel",
+            "schema": {
+              "$ref": "#/components/schemas/PropertyStatus"
+            }
+          },
+          {
+            "name": "operation",
+            "in": "query",
+            "required": false,
+            "description": "Filtrar por tipo de operação",
+            "schema": {
+              "$ref": "#/components/schemas/OperationType"
+            }
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "required": false,
+            "description": "Filtrar por tipo de imóvel (case-insensitive, busca parcial). Exemplo: `Apartamento`, `Casa`",
+            "schema": {
+              "type": "string",
+              "example": "Apartamento"
+            }
+          },
+          {
+            "name": "createdAfter",
+            "in": "query",
+            "required": false,
+            "description": "Retornar imóveis criados após esta data (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2025-01-01T00:00:00Z"
+            }
+          },
+          {
+            "name": "createdBefore",
+            "in": "query",
+            "required": false,
+            "description": "Retornar imóveis criados antes desta data (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2026-01-01T00:00:00Z"
+            }
+          },
+          {
+            "name": "updatedAfter",
+            "in": "query",
+            "required": false,
+            "description": "Retornar imóveis atualizados após esta data (ISO 8601). Útil para sincronização incremental.",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2026-03-01T00:00:00Z"
+            }
+          },
+          {
+            "name": "updatedBefore",
+            "in": "query",
+            "required": false,
+            "description": "Retornar imóveis atualizados antes desta data (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de imóveis retornada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Property"
+                      }
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  }
+                },
+                "example": {
+                  "data": [
+                    {
+                      "code": "PROP-001",
+                      "title": "Apartamento Moderno no Centro",
+                      "status": "AVAILABLE",
+                      "operationType": "SALE",
+                      "pricing": {
+                        "salePrice": 450000,
+                        "rentalPrice": null,
+                        "condominiumFee": 800,
+                        "iptu": 2400
+                      }
+                    }
+                  ],
+                  "meta": {
+                    "page": 1,
+                    "limit": 20,
+                    "total": 50,
+                    "totalPages": 3
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "missing_fields": {
+                    "summary": "Parâmetro fields ausente",
+                    "value": {
+                      "error": "fields: The \"fields\" parameter is required",
+                      "code": "VALIDATION_ERROR"
+                    }
+                  },
+                  "invalid_fields": {
+                    "summary": "Campos inválidos solicitados",
+                    "value": {
+                      "error": "Invalid fields: foo, bar",
+                      "code": "INVALID_FIELDS"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente ou inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Invalid or expired token",
+                  "code": "INVALID_TOKEN"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit excedido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Rate limit exceeded",
+                  "code": "RATE_LIMIT_EXCEEDED"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Internal server error",
+                  "code": "INTERNAL_ERROR"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/leads": {
+      "get": {
+        "operationId": "listLeads",
+        "summary": "Listar leads",
+        "description": "Retorna uma lista paginada de leads. Você controla quais campos são retornados através do parâmetro `fields` (obrigatório).\n\nSuporta filtros por status e datas de criação/atualização.",
+        "tags": ["Leads"],
+        "parameters": [
+          {
+            "name": "fields",
+            "in": "query",
+            "required": true,
+            "description": "Campos a serem retornados, separados por vírgula. Use `GET /v1/fields` para consultar campos disponíveis. Exemplo: `name,email,phone,status`",
+            "schema": {
+              "type": "string",
+              "example": "id,name,email,phone,status,source,createdAt"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "description": "Número da página (começa em 1)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "Quantidade de itens por página (máximo 100)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "description": "Filtrar por status do lead",
+            "schema": {
+              "$ref": "#/components/schemas/LeadStatus"
+            }
+          },
+          {
+            "name": "createdAfter",
+            "in": "query",
+            "required": false,
+            "description": "Retornar leads criados após esta data (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2026-01-01T00:00:00Z"
+            }
+          },
+          {
+            "name": "createdBefore",
+            "in": "query",
+            "required": false,
+            "description": "Retornar leads criados antes desta data (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          },
+          {
+            "name": "updatedAfter",
+            "in": "query",
+            "required": false,
+            "description": "Retornar leads atualizados após esta data (ISO 8601). Útil para sincronização incremental.",
+            "schema": {
+              "type": "string",
+              "format": "date-time",
+              "example": "2026-03-01T00:00:00Z"
+            }
+          },
+          {
+            "name": "updatedBefore",
+            "in": "query",
+            "required": false,
+            "description": "Retornar leads atualizados antes desta data (ISO 8601)",
+            "schema": {
+              "type": "string",
+              "format": "date-time"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Lista de leads retornada com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Lead"
+                      }
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  }
+                },
+                "example": {
+                  "data": [
+                    {
+                      "id": "clx1abc23def456",
+                      "name": "João Silva",
+                      "email": "joao@example.com",
+                      "phone": "11999999999",
+                      "status": "NEW_LEAD",
+                      "source": "WEBSITE",
+                      "createdAt": "2026-03-13T10:30:00.000Z"
+                    }
+                  ],
+                  "meta": {
+                    "page": 1,
+                    "limit": 20,
+                    "total": 150,
+                    "totalPages": 8
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Parâmetros inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "fields: The \"fields\" parameter is required",
+                  "code": "VALIDATION_ERROR"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente ou inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Invalid or expired token",
+                  "code": "INVALID_TOKEN"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit excedido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Rate limit exceeded",
+                  "code": "RATE_LIMIT_EXCEEDED"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Internal server error",
+                  "code": "INTERNAL_ERROR"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createLead",
+        "summary": "Criar lead",
+        "description": "Cria um novo lead no sistema. Campos obrigatórios: `name`, `email`, `phone` e `message`.\n\nSe `propertyCode` for informado e o imóvel existir, o lead será vinculado automaticamente ao imóvel. Se `interestedPropertyTitle` não for informado, será preenchido com o título do imóvel encontrado.\n\nO lead é criado com status `NEW_LEAD` e prioridade `MEDIUM` por padrão.",
+        "tags": ["Leads"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLeadInput"
+              },
+              "examples": {
+                "basic": {
+                  "summary": "Lead básico",
+                  "value": {
+                    "name": "João Silva",
+                    "email": "joao@example.com",
+                    "phone": "11999999999",
+                    "message": "Tenho interesse neste imóvel, gostaria de mais informações."
+                  }
+                },
+                "complete": {
+                  "summary": "Lead completo com imóvel",
+                  "value": {
+                    "name": "Maria Santos",
+                    "email": "maria@example.com",
+                    "phone": "21988888888",
+                    "message": "Vi este apartamento no site e gostaria de agendar uma visita.",
+                    "source": "WEBSITE",
+                    "propertyCode": "PROP-001",
+                    "interestedPropertyTitle": "Apartamento Moderno - Centro",
+                    "interestedPropertyLink": "https://site.com.br/imovel/prop-001",
+                    "trafficOrigin": "google-ads-campanha-verao"
+                  }
+                },
+                "portal": {
+                  "summary": "Lead via portal imobiliário",
+                  "value": {
+                    "name": "Carlos Oliveira",
+                    "email": "carlos@example.com",
+                    "phone": "31977777777",
+                    "message": "Encontrei este imóvel no VivaReal, quero mais detalhes.",
+                    "source": "PORTAL_VIVAREAL",
+                    "propertyCode": "PROP-002"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Lead criado com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/Lead"
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "id": "clx1abc23def456",
+                    "name": "João Silva",
+                    "email": "joao@example.com",
+                    "phone": "11999999999",
+                    "message": "Tenho interesse neste imóvel, gostaria de mais informações.",
+                    "source": "API",
+                    "status": "NEW_LEAD",
+                    "priority": "MEDIUM",
+                    "propertyId": null,
+                    "interestedPropertyTitle": null,
+                    "createdAt": "2026-03-13T10:30:00.000Z",
+                    "updatedAt": "2026-03-13T10:30:00.000Z"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Dados inválidos",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "missing_body": {
+                    "summary": "Body ausente",
+                    "value": {
+                      "error": "Request body is required",
+                      "code": "MISSING_BODY"
+                    }
+                  },
+                  "validation_error": {
+                    "summary": "Validação falhou",
+                    "value": {
+                      "error": "name: Name is required; email: Invalid email",
+                      "code": "VALIDATION_ERROR"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente ou inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Invalid or expired token",
+                  "code": "INVALID_TOKEN"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit excedido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Rate limit exceeded",
+                  "code": "RATE_LIMIT_EXCEEDED"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erro interno do servidor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Internal server error",
+                  "code": "INTERNAL_ERROR"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/fields": {
+      "get": {
+        "operationId": "listFields",
+        "summary": "Listar campos disponíveis",
+        "description": "Retorna todos os campos disponíveis para as entidades `properties` e `leads`. Use este endpoint para descobrir quais campos podem ser solicitados no parâmetro `fields` dos endpoints de listagem.\n\nCampos podem ser simples (retornam valor direto) ou agrupados (retornam objeto com sub-campos).",
+        "tags": ["Fields"],
+        "responses": {
+          "200": {
+            "description": "Campos retornados com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/FieldsRegistry"
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "properties": {
+                      "id": { "description": "Unique identifier" },
+                      "code": { "description": "Property code" },
+                      "title": { "description": "Property title" },
+                      "address": {
+                        "description": "Address information",
+                        "fields": {
+                          "street": { "description": "Street name" },
+                          "number": { "description": "Street number" },
+                          "neighborhood": { "description": "Neighborhood name" },
+                          "city": { "description": "City name" },
+                          "state": { "description": "State name" },
+                          "uf": { "description": "State abbreviation" },
+                          "cep": { "description": "Postal code" }
+                        }
+                      }
+                    },
+                    "leads": {
+                      "id": { "description": "Unique identifier" },
+                      "name": { "description": "Lead name" },
+                      "email": { "description": "Lead email" }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente ou inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Invalid or expired token",
+                  "code": "INVALID_TOKEN"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/values/{entity}/{field}": {
+      "get": {
+        "operationId": "getDistinctValues",
+        "summary": "Obter valores distintos de um campo",
+        "description": "Retorna os valores distintos disponíveis para um campo específico de uma entidade. Útil para popular filtros e selects na sua aplicação.\n\n**Campos consultáveis:**\n- `properties`: `status`, `operationType`, `propertyType`, `highlight`\n- `leads`: `status`, `source`, `priority`",
+        "tags": ["Values"],
+        "parameters": [
+          {
+            "name": "entity",
+            "in": "path",
+            "required": true,
+            "description": "Nome da entidade (`properties` ou `leads`)",
+            "schema": {
+              "type": "string",
+              "enum": ["properties", "leads"],
+              "example": "properties"
+            }
+          },
+          {
+            "name": "field",
+            "in": "path",
+            "required": true,
+            "description": "Nome do campo a consultar. Campos disponíveis dependem da entidade.",
+            "schema": {
+              "type": "string",
+              "example": "status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Valores distintos retornados com sucesso",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "$ref": "#/components/schemas/ValuesResponse"
+                    }
+                  }
+                },
+                "example": {
+                  "data": {
+                    "entity": "properties",
+                    "field": "status",
+                    "values": ["AVAILABLE", "RENTED", "RESERVED", "SOLD", "UNAVAILABLE"]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Entidade ou campo inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "examples": {
+                  "invalid_entity": {
+                    "summary": "Entidade inválida",
+                    "value": {
+                      "error": "Invalid entity: foo. Use one of: properties, leads",
+                      "code": "INVALID_ENTITY"
+                    }
+                  },
+                  "invalid_field": {
+                    "summary": "Campo não consultável",
+                    "value": {
+                      "error": "Field \"title\" is not queryable for \"properties\". Queryable fields: status, operationType, propertyType, highlight",
+                      "code": "INVALID_FIELD"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Token ausente ou inválido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Invalid or expired token",
+                  "code": "INVALID_TOKEN"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Rate limit excedido",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                },
+                "example": {
+                  "error": "Rate limit exceeded",
+                  "code": "RATE_LIMIT_EXCEEDED"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "TokenResponse": {
+        "type": "object",
+        "required": ["token", "expiresIn", "tokenType"],
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Token JWT para autenticação nas rotas protegidas"
+          },
+          "expiresIn": {
+            "type": "integer",
+            "description": "Tempo de expiração do token em segundos",
+            "example": 3600
+          },
+          "tokenType": {
+            "type": "string",
+            "description": "Tipo do token (sempre `Bearer`)",
+            "example": "Bearer"
+          }
+        }
+      },
+      "Property": {
+        "type": "object",
+        "description": "Imóvel publicado. Os campos retornados dependem do parâmetro `fields` na requisição.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Identificador único do imóvel",
+            "example": "clx1abc23def456"
+          },
+          "code": {
+            "type": "string",
+            "nullable": true,
+            "description": "Código do imóvel na imobiliária",
+            "example": "PROP-001"
+          },
+          "title": {
+            "type": "string",
+            "description": "Título do imóvel",
+            "example": "Apartamento Moderno no Centro"
+          },
+          "description": {
+            "type": "string",
+            "description": "Descrição detalhada do imóvel",
+            "example": "Apartamento de 3 quartos com vista para o mar..."
+          },
+          "operationType": {
+            "$ref": "#/components/schemas/OperationType"
+          },
+          "status": {
+            "$ref": "#/components/schemas/PropertyStatus"
+          },
+          "propertyType": {
+            "type": "string",
+            "nullable": true,
+            "description": "Tipo do imóvel (ex: Apartamento, Casa, Terreno)",
+            "example": "Apartamento"
+          },
+          "address": {
+            "$ref": "#/components/schemas/Address"
+          },
+          "coordinates": {
+            "$ref": "#/components/schemas/Coordinates"
+          },
+          "features": {
+            "$ref": "#/components/schemas/Features"
+          },
+          "pricing": {
+            "$ref": "#/components/schemas/Pricing"
+          },
+          "financing": {
+            "$ref": "#/components/schemas/Financing"
+          },
+          "highlight": {
+            "type": "string",
+            "description": "Nível de destaque do imóvel",
+            "example": "FEATURED"
+          },
+          "exclusive": {
+            "type": "boolean",
+            "description": "Se o imóvel é exclusivo da imobiliária",
+            "example": true
+          },
+          "isPublished": {
+            "type": "boolean",
+            "description": "Se o imóvel está publicado",
+            "example": true
+          },
+          "photos": {
+            "type": "array",
+            "description": "Fotos do imóvel ordenadas por `order`",
+            "items": {
+              "$ref": "#/components/schemas/Photo"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data de criação (ISO 8601)",
+            "example": "2026-01-15T10:30:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data da última atualização (ISO 8601)",
+            "example": "2026-03-13T14:00:00.000Z"
+          }
+        }
+      },
+      "Address": {
+        "type": "object",
+        "description": "Endereço do imóvel",
+        "properties": {
+          "street": { "type": "string", "nullable": true, "description": "Nome da rua", "example": "Rua das Flores" },
+          "number": { "type": "string", "nullable": true, "description": "Número", "example": "123" },
+          "complement": { "type": "string", "nullable": true, "description": "Complemento", "example": "Apto 401" },
+          "neighborhood": { "type": "string", "nullable": true, "description": "Bairro", "example": "Centro" },
+          "city": { "type": "string", "nullable": true, "description": "Cidade", "example": "São Paulo" },
+          "state": { "type": "string", "nullable": true, "description": "Estado", "example": "São Paulo" },
+          "uf": { "type": "string", "nullable": true, "description": "Sigla do estado", "example": "SP" },
+          "cep": { "type": "string", "nullable": true, "description": "CEP", "example": "01001-000" }
+        }
+      },
+      "Coordinates": {
+        "type": "object",
+        "description": "Coordenadas geográficas do imóvel",
+        "properties": {
+          "latitude": { "type": "number", "nullable": true, "description": "Latitude", "example": -23.5505 },
+          "longitude": { "type": "number", "nullable": true, "description": "Longitude", "example": -46.6333 }
+        }
+      },
+      "Features": {
+        "type": "object",
+        "description": "Características do imóvel",
+        "properties": {
+          "totalArea": { "type": "number", "nullable": true, "description": "Área total em m²", "example": 120 },
+          "builtArea": { "type": "number", "nullable": true, "description": "Área construída em m²", "example": 95 },
+          "bedrooms": { "type": "integer", "nullable": true, "description": "Número de quartos", "example": 3 },
+          "bathrooms": { "type": "integer", "nullable": true, "description": "Número de banheiros", "example": 2 },
+          "suites": { "type": "integer", "nullable": true, "description": "Número de suítes", "example": 1 },
+          "parkingSpaces": { "type": "integer", "nullable": true, "description": "Número de vagas de garagem", "example": 2 },
+          "floor": { "type": "integer", "nullable": true, "description": "Andar do imóvel", "example": 4 },
+          "totalFloors": { "type": "integer", "nullable": true, "description": "Total de andares do edifício", "example": 20 },
+          "isFurnished": { "type": "boolean", "description": "Se o imóvel é mobiliado", "example": false }
+        }
+      },
+      "Pricing": {
+        "type": "object",
+        "description": "Valores do imóvel",
+        "properties": {
+          "salePrice": { "type": "number", "nullable": true, "description": "Preço de venda em reais", "example": 450000 },
+          "rentalPrice": { "type": "number", "nullable": true, "description": "Preço de aluguel mensal em reais", "example": 2500 },
+          "condominiumFee": { "type": "number", "nullable": true, "description": "Taxa de condomínio mensal em reais", "example": 800 },
+          "iptu": { "type": "number", "nullable": true, "description": "IPTU anual em reais", "example": 2400 }
+        }
+      },
+      "Financing": {
+        "type": "object",
+        "description": "Opções de financiamento",
+        "properties": {
+          "acceptsFinancing": { "type": "boolean", "description": "Se aceita financiamento", "example": true }
+        }
+      },
+      "Photo": {
+        "type": "object",
+        "description": "Foto do imóvel",
+        "required": ["id", "url", "order", "isMain"],
+        "properties": {
+          "id": { "type": "string", "description": "Identificador da foto", "example": "photo-001" },
+          "url": { "type": "string", "description": "URL da imagem", "example": "https://cdn.keyspot.app/photos/photo-001.jpg" },
+          "alt": { "type": "string", "nullable": true, "description": "Texto alternativo", "example": "Sala de estar ampla" },
+          "order": { "type": "integer", "description": "Ordem de exibição", "example": 1 },
+          "isMain": { "type": "boolean", "description": "Se é a foto principal", "example": true }
+        }
+      },
+      "Lead": {
+        "type": "object",
+        "description": "Lead (contato de interessado). Os campos retornados dependem do parâmetro `fields` na requisição (GET) ou são retornados completos (POST).",
+        "properties": {
+          "id": { "type": "string", "description": "Identificador único do lead", "example": "clx1abc23def456" },
+          "name": { "type": "string", "description": "Nome do lead", "example": "João Silva" },
+          "email": { "type": "string", "format": "email", "description": "E-mail do lead", "example": "joao@example.com" },
+          "phone": { "type": "string", "description": "Telefone do lead", "example": "11999999999" },
+          "message": { "type": "string", "description": "Mensagem do lead", "example": "Tenho interesse neste imóvel." },
+          "source": { "$ref": "#/components/schemas/LeadSource" },
+          "status": { "$ref": "#/components/schemas/LeadStatus" },
+          "priority": { "$ref": "#/components/schemas/LeadPriority" },
+          "propertyId": { "type": "string", "nullable": true, "description": "ID do imóvel vinculado", "example": "clx1abc23def456" },
+          "interestedPropertyTitle": { "type": "string", "nullable": true, "description": "Título do imóvel de interesse", "example": "Apartamento Moderno - Centro" },
+          "createdAt": { "type": "string", "format": "date-time", "description": "Data de criação (ISO 8601)", "example": "2026-03-13T10:30:00.000Z" },
+          "updatedAt": { "type": "string", "format": "date-time", "description": "Data da última atualização (ISO 8601)", "example": "2026-03-13T10:30:00.000Z" }
+        }
+      },
+      "CreateLeadInput": {
+        "type": "object",
+        "required": ["name", "email", "phone", "message"],
+        "description": "Dados para criação de um novo lead",
+        "properties": {
+          "name": { "type": "string", "minLength": 1, "description": "Nome do contato", "example": "João Silva" },
+          "email": { "type": "string", "format": "email", "description": "E-mail do contato", "example": "joao@example.com" },
+          "phone": { "type": "string", "minLength": 1, "description": "Telefone do contato", "example": "11999999999" },
+          "message": { "type": "string", "minLength": 1, "description": "Mensagem do contato", "example": "Tenho interesse neste imóvel, gostaria de mais informações." },
+          "source": { "$ref": "#/components/schemas/LeadSource" },
+          "propertyCode": { "type": "string", "description": "Código do imóvel para vinculação automática", "example": "PROP-001" },
+          "interestedPropertyTitle": { "type": "string", "description": "Título do imóvel de interesse (preenchido automaticamente se `propertyCode` for encontrado)", "example": "Apartamento Moderno - Centro" },
+          "interestedPropertyLink": { "type": "string", "description": "Link do imóvel de interesse", "example": "https://site.com.br/imovel/prop-001" },
+          "trafficOrigin": { "type": "string", "description": "Origem do tráfego para rastreamento (UTM, campanha, etc.)", "example": "google-ads-campanha-verao" }
+        }
+      },
+      "PropertyStatus": {
+        "type": "string",
+        "enum": ["AVAILABLE", "SOLD", "RENTED", "RESERVED", "UNAVAILABLE"],
+        "description": "Status do imóvel",
+        "example": "AVAILABLE"
+      },
+      "OperationType": {
+        "type": "string",
+        "enum": ["SALE", "RENT", "SEASONAL"],
+        "description": "Tipo de operação do imóvel",
+        "example": "SALE"
+      },
+      "LeadStatus": {
+        "type": "string",
+        "enum": ["NEW_LEAD", "IN_SERVICE", "VISIT_SCHEDULED", "VISIT_COMPLETED", "PROPOSAL_MADE", "CONVERTED", "LOST"],
+        "description": "Status do lead no funil de vendas",
+        "example": "NEW_LEAD"
+      },
+      "LeadSource": {
+        "type": "string",
+        "enum": ["WEBSITE", "WHATSAPP", "PHONE", "EMAIL", "SOCIAL_MEDIA", "INSTAGRAM", "FACEBOOK", "PORTAL", "PORTAL_VIVAREAL", "PORTAL_ZAPIMOVEIS", "PORTAL_OLX", "PORTAL_IMOVELWEB", "PORTAL_CHAVESNAMAO", "META_ADS", "GOOGLE_ADS", "RD_STATION", "REFERRAL", "REAL_ESTATE", "OTHER", "API"],
+        "description": "Fonte de origem do lead",
+        "example": "WEBSITE"
+      },
+      "LeadPriority": {
+        "type": "string",
+        "enum": ["LOW", "MEDIUM", "HIGH"],
+        "description": "Prioridade do lead",
+        "example": "MEDIUM"
+      },
+      "PaginationMeta": {
+        "type": "object",
+        "required": ["page", "limit", "total", "totalPages"],
+        "description": "Metadados de paginação",
+        "properties": {
+          "page": { "type": "integer", "description": "Página atual", "example": 1 },
+          "limit": { "type": "integer", "description": "Itens por página", "example": 20 },
+          "total": { "type": "integer", "description": "Total de registros", "example": 150 },
+          "totalPages": { "type": "integer", "description": "Total de páginas", "example": 8 }
+        }
+      },
+      "FieldsRegistry": {
+        "type": "object",
+        "description": "Registro de campos disponíveis por entidade",
+        "additionalProperties": {
+          "type": "object",
+          "additionalProperties": {
+            "oneOf": [
+              {
+                "type": "object",
+                "properties": {
+                  "description": { "type": "string" }
+                }
+              },
+              {
+                "type": "object",
+                "properties": {
+                  "description": { "type": "string" },
+                  "fields": {
+                    "type": "object",
+                    "additionalProperties": {
+                      "type": "object",
+                      "properties": {
+                        "description": { "type": "string" }
+                      }
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      },
+      "ValuesResponse": {
+        "type": "object",
+        "required": ["entity", "field", "values"],
+        "description": "Resposta de valores distintos",
+        "properties": {
+          "entity": { "type": "string", "description": "Entidade consultada", "example": "properties" },
+          "field": { "type": "string", "description": "Campo consultado", "example": "status" },
+          "values": {
+            "type": "array",
+            "items": { "type": "string" },
+            "description": "Valores distintos encontrados",
+            "example": ["AVAILABLE", "RENTED", "RESERVED", "SOLD", "UNAVAILABLE"]
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": ["error", "code"],
+        "description": "Resposta de erro padronizada",
+        "properties": {
+          "error": { "type": "string", "description": "Mensagem de erro legível", "example": "Invalid or expired token" },
+          "code": { "type": "string", "description": "Código de erro programático", "example": "INVALID_TOKEN" }
+        }
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Token JWT obtido via `POST /v1/auth/token`. Válido por 1 hora."
+      }
+    }
+  },
+  "security": [
+    {
+      "BearerAuth": []
+    }
+  ]
+}

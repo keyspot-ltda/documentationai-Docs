@@ -1,0 +1,301 @@
+---
+title: "Boas Práticas"
+description: "Recomendações de paginação, tratamento de erros, retry com backoff exponencial, rate limiting e checklist de produção para a Keyspot Partner API."
+---
+
+## Paginação
+
+Todas as listagens da API usam paginação offset-based com os parâmetros `page` e `limit`.
+
+| Parâmetro | Tipo | Padrão | Mínimo | Máximo |
+|-----------|------|--------|--------|--------|
+| `page` | integer | 1 | 1 | — |
+| `limit` | integer | 20 | 1 | 100 |
+
+A resposta inclui metadados de paginação no campo `meta`:
+
+```json
+{
+  "data": [...],
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "total": 150,
+    "totalPages": 8
+  }
+}
+```
+
+### Percorrendo todas as páginas
+
+<CodeGroup tabs="TypeScript,Python">
+  ```typescript
+  async function fetchAllProperties(token: string, fields: string): Promise<any[]> {
+    const allData: any[] = [];
+    let page = 1;
+    let totalPages = 1;
+
+    do {
+      const response = await fetch(
+        `https://partner-api.keyspot.app/v1/properties?fields=${fields}&page=${page}&limit=100`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      const { data, meta } = await response.json();
+      allData.push(...data);
+      totalPages = meta.totalPages;
+      page++;
+    } while (page <= totalPages);
+
+    return allData;
+  }
+  ```
+
+  ```python
+  import requests
+
+  def fetch_all_properties(token: str, fields: str) -> list:
+      all_data = []
+      page = 1
+      total_pages = 1
+
+      while page <= total_pages:
+          response = requests.get(
+              "https://partner-api.keyspot.app/v1/properties",
+              params={"fields": fields, "page": page, "limit": 100},
+              headers={"Authorization": f"Bearer {token}"},
+          )
+          result = response.json()
+          all_data.extend(result["data"])
+          total_pages = result["meta"]["totalPages"]
+          page += 1
+
+      return all_data
+  ```
+</CodeGroup>
+
+<Callout kind="tip">
+  Use `limit=100` (máximo) para reduzir o número de requisições ao percorrer grandes conjuntos de dados.
+</Callout>
+
+## Tratamento de erros
+
+A API retorna erros no formato padronizado `{ "error": "...", "code": "..." }`. Sempre verifique o status HTTP e o `code` da resposta.
+
+### Códigos HTTP
+
+| Status | Significado | Ação recomendada |
+|--------|-------------|------------------|
+| 200 | Sucesso | Processar resposta normalmente |
+| 201 | Criado | Lead criado com sucesso |
+| 400 | Parâmetros inválidos | Corrigir os parâmetros da requisição |
+| 401 | Não autenticado | Renovar o token JWT |
+| 403 | Acesso bloqueado | Verificar IP ou status da API com a Keyspot |
+| 404 | Não encontrado | Verificar o URL do endpoint |
+| 429 | Rate limit excedido | Aguardar `Retry-After` segundos |
+| 500 | Erro do servidor | Retry com backoff exponencial |
+
+### Códigos de erro programáticos
+
+<ExpandableGroup>
+  <Expandable title="Erros de autenticação (401)" default-open="false">
+    | Código | Descrição |
+    |--------|-----------|
+    | `MISSING_CREDENTIALS` | Headers `X-API-Key` e/ou `X-API-Secret` ausentes |
+    | `INVALID_API_KEY` | API Key não encontrada |
+    | `INVALID_API_SECRET` | API Secret incorreto |
+    | `MISSING_TOKEN` | Header `Authorization` ausente |
+    | `INVALID_TOKEN` | Token JWT inválido ou expirado |
+  </Expandable>
+  <Expandable title="Erros de autorização (403)" default-open="false">
+    | Código | Descrição |
+    |--------|-----------|
+    | `API_DISABLED` | Acesso à API desabilitado para o cliente |
+    | `IP_BLOCKED` | IP não está na lista de IPs permitidos |
+  </Expandable>
+  <Expandable title="Erros de validação (400)" default-open="false">
+    | Código | Descrição |
+    |--------|-----------|
+    | `VALIDATION_ERROR` | Campos obrigatórios ausentes ou com formato inválido |
+    | `INVALID_FIELDS` | Campos solicitados não existem na entidade |
+    | `INVALID_ENTITY` | Entidade não existe (use `properties` ou `leads`) |
+    | `INVALID_FIELD` | Campo não é consultável via `/v1/values` |
+    | `MISSING_BODY` | Body da requisição POST ausente |
+  </Expandable>
+  <Expandable title="Erros de servidor (429, 500)" default-open="false">
+    | Código | Descrição |
+    |--------|-----------|
+    | `RATE_LIMIT_EXCEEDED` | Limite de requisições por minuto excedido |
+    | `NO_DATABASE` | Banco de dados do cliente não configurado |
+    | `INTERNAL_ERROR` | Erro interno inesperado |
+  </Expandable>
+</ExpandableGroup>
+
+## Retry com backoff exponencial
+
+Para erros `429` e `5xx`, implemente retry com backoff exponencial:
+
+<CodeGroup tabs="TypeScript,Python">
+  ```typescript
+  async function fetchWithRetry(
+    url: string,
+    options: RequestInit,
+    maxRetries = 3
+  ): Promise<Response> {
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      const response = await fetch(url, options);
+
+      if (response.status === 429) {
+        const retryAfter = Number(response.headers.get("Retry-After") || 60);
+        await new Promise((r) => setTimeout(r, retryAfter * 1000));
+        continue;
+      }
+
+      if (response.status >= 500 && attempt < maxRetries) {
+        const delay = Math.pow(2, attempt) * 1000; // 1s, 2s, 4s
+        await new Promise((r) => setTimeout(r, delay));
+        continue;
+      }
+
+      return response;
+    }
+
+    throw new Error("Max retries exceeded");
+  }
+  ```
+
+  ```python
+  import time
+  import requests
+
+  def fetch_with_retry(url: str, headers: dict, max_retries: int = 3) -> requests.Response:
+      for attempt in range(max_retries + 1):
+          response = requests.get(url, headers=headers)
+
+          if response.status_code == 429:
+              retry_after = int(response.headers.get("Retry-After", 60))
+              time.sleep(retry_after)
+              continue
+
+          if response.status_code >= 500 and attempt < max_retries:
+              delay = (2 ** attempt)  # 1s, 2s, 4s
+              time.sleep(delay)
+              continue
+
+          return response
+
+      raise Exception("Max retries exceeded")
+  ```
+</CodeGroup>
+
+<Callout kind="alert">
+  Nunca faça retry de erros `400` (validação) ou `401`/`403` (autenticação) — esses erros exigem correção no código ou nas credenciais.
+</Callout>
+
+## Rate limiting
+
+A API impõe um limite de requisições por minuto (sliding window de 60 segundos). O limite é configurado por cliente.
+
+### Headers de rate limit
+
+Toda resposta de rotas protegidas inclui:
+
+| Header | Descrição |
+|--------|-----------|
+| `X-RateLimit-Limit` | Limite máximo de requisições por minuto |
+| `X-RateLimit-Remaining` | Requisições restantes na janela atual |
+| `Retry-After` | Segundos para aguardar (apenas quando exceder) |
+
+### Monitorar o consumo
+
+```typescript
+const response = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+
+const limit = Number(response.headers.get("X-RateLimit-Limit"));
+const remaining = Number(response.headers.get("X-RateLimit-Remaining"));
+
+if (remaining < 10) {
+  console.warn(`Rate limit baixo: ${remaining}/${limit} restantes`);
+}
+```
+
+## Renovação de token
+
+O token JWT expira em **1 hora**. Renove-o proativamente antes de expirar para evitar erros `401` durante requisições.
+
+```typescript
+// Renove a cada 50 minutos (antes dos 60 de expiração)
+const TOKEN_REFRESH_INTERVAL = 50 * 60 * 1000;
+```
+
+Veja mais detalhes em [Autenticação](/comece-aqui/autenticacao).
+
+## Valores e datas
+
+- **Valores monetários**: sempre em reais (BRL), sem formatação. Ex: `450000` (não `"R$ 450.000,00"`)
+- **Áreas**: sempre em m². Ex: `120.5`
+- **Datas**: sempre em ISO 8601 com timezone UTC. Ex: `2026-03-13T10:30:00.000Z`
+- **Filtros de data**: use `createdAfter`, `createdBefore`, `updatedAfter`, `updatedBefore` em formato ISO 8601
+
+## Seleção de campos
+
+<Tabs>
+  <Tab title="Recomendado">
+    Solicite apenas os campos que você precisa:
+
+    ```bash
+    # Apenas dados básicos para listagem
+    GET /v1/properties?fields=code,title,status,pricing
+
+    # Dados para exibição de card
+    GET /v1/properties?fields=code,title,address,pricing,photos&limit=10
+    ```
+  </Tab>
+  <Tab title="Evitar">
+    Não solicite todos os campos se não precisa deles:
+
+    ```bash
+    # Evite isso se você só precisa do título e preço
+    GET /v1/properties?fields=id,code,title,description,address,coordinates,features,pricing,financing,highlight,exclusive,isPublished,photos,operationType,status,propertyType,createdAt,updatedAt
+    ```
+  </Tab>
+</Tabs>
+
+## Sincronização incremental
+
+Para manter seus dados atualizados sem re-consultar todo o catálogo, use filtros de data:
+
+```bash
+# Imóveis atualizados nas últimas 24 horas
+GET /v1/properties?fields=code,title,status,pricing,updatedAt&updatedAfter=2026-03-12T00:00:00Z
+```
+
+<Callout kind="tip">
+  Armazene o timestamp da última sincronização e use-o como `updatedAfter` na próxima consulta.
+</Callout>
+
+## Checklist de produção
+
+Antes de ir para produção, verifique se sua integração atende a todos os critérios:
+
+- [ ] **Autenticação**: renovação automática de token antes da expiração
+- [ ] **Paginação**: percorre todas as páginas quando necessário
+- [ ] **Tratamento de erros**: lida com todos os códigos HTTP (400, 401, 403, 429, 500)
+- [ ] **Retry**: backoff exponencial para erros 429 e 5xx
+- [ ] **Rate limiting**: monitora headers e respeita os limites
+- [ ] **Seleção de campos**: solicita apenas campos necessários
+- [ ] **Credenciais**: armazenadas com segurança (variáveis de ambiente)
+- [ ] **HTTPS**: todas as requisições usam HTTPS
+- [ ] **Logs**: registra erros e requisições para debug
+- [ ] **Sincronização**: usa filtros de data para atualizações incrementais
+
+## Próximos passos
+
+<Columns cols={2}>
+  <Card title="Dicionário de Dados" icon="database" href="/referencia/dicionario-dados">
+    Referência completa de entidades, campos e enumerações.
+  </Card>
+  <Card title="Erros Comuns" icon="alert-triangle" href="/operacao/erros-comuns">
+    Diagnóstico detalhado por código de erro.
+  </Card>
+</Columns>

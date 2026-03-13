@@ -1,0 +1,72 @@
+---
+title: "Suporte"
+description: "Canais de suporte e como obter ajuda para integrar com a Keyspot Partner API."
+---
+
+## Canais de contato
+
+<Columns cols={2}>
+  <Card title="E-mail de Parcerias" icon="mail" href="mailto:parcerias@keyspot.app">
+    Para questões sobre credenciais, limites de uso e configuração de acesso.
+  </Card>
+  <Card title="Suporte Técnico" icon="headphones" href="mailto:suporte@keyspot.app">
+    Para dúvidas técnicas, bugs e problemas com a API.
+  </Card>
+</Columns>
+
+## Antes de entrar em contato
+
+Para agilizar o atendimento, inclua as seguintes informações no seu chamado:
+
+<Steps>
+  <Step title="Identifique o problema" icon="search">
+    Descreva o que você está tentando fazer e o que está acontecendo. Inclua:
+
+    - Endpoint chamado (ex: `GET /v1/properties`)
+    - Parâmetros enviados
+    - Código HTTP retornado
+    - Body da resposta de erro (com `error` e `code`)
+  </Step>
+  <Step title="Inclua contexto técnico" icon="code">
+    - Linguagem/framework utilizado
+    - Timestamp aproximado do erro (UTC)
+    - Sua `API Key` (nunca envie o `API Secret`)
+    - IP de origem das requisições
+  </Step>
+  <Step title="Verifique a documentação" icon="book-open">
+    Consulte os seguintes recursos antes de abrir um chamado:
+
+    - [Erros Comuns](/operacao/erros-comuns) — diagnóstico por código de erro
+    - [Boas Práticas](/guias/boas-praticas) — paginação, retry e rate limiting
+    - [Autenticação](/comece-aqui/autenticacao) — fluxo JWT e renovação de token
+  </Step>
+</Steps>
+
+## Problemas comuns
+
+| Sintoma | Provável causa | Solução rápida |
+|---------|---------------|----------------|
+| `401 INVALID_TOKEN` em todas as chamadas | Token expirado | Gere um novo token |
+| `403 IP_BLOCKED` | IP não autorizado | Solicite inclusão do IP |
+| `429` frequente | Muitas requisições | Reduza a frequência ou solicite aumento de limite |
+| Dados desatualizados | Cache local | Use `updatedAfter` para sincronização incremental |
+| Campos vazios na resposta | Campo não solicitado | Adicione o campo ao parâmetro `fields` |
+
+## SLA
+
+| Item | Compromisso |
+|------|-------------|
+| Disponibilidade da API | 99.9% uptime |
+| Tempo de resposta (suporte) | Até 24 horas úteis |
+| Tempo de resposta (API) | < 500ms (p95) |
+
+## Próximos passos
+
+<Columns cols={2}>
+  <Card title="Erros Comuns" icon="alert-triangle" href="/operacao/erros-comuns">
+    Diagnóstico detalhado por código de erro.
+  </Card>
+  <Card title="Quickstart" icon="zap" href="/comece-aqui/quickstart">
+    Volte ao início e teste sua integração.
+  </Card>
+</Columns>
