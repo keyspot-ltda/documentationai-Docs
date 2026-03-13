@@ -1,0 +1,57 @@
+---
+title: "Introdução"
+description: "Descubra o que é a Keyspot Partner API, entenda o ecossistema Keyspot e veja como nossa API pode acelerar sua integração."
+---
+
+Bem-vindo à documentação oficial da **Keyspot Partner API**. Nossa API é a interface pública da plataforma, projetada para que parceiros e sistemas externos possam acessar dados da Keyspot de forma segura, controlada e em tempo real.
+
+## O ecossistema Keyspot
+
+A Keyspot é uma **plataforma completa de CRM, Site e Inteligência Artificial para imobiliárias**, centralizando leads, imóveis e atendimento em um único lugar. O nosso ecossistema é construído sobre três pilares principais:
+
+- **Site com Inteligência Artificial**: Uma vitrine digital que recomenda proativamente os imóveis com maior aderência ao perfil do visitante, maximizando a conversão em leads.
+- **CRM completo**: Sistema robusto de gestão com pipeline de vendas configurável, distribuição automática de leads para corretores, automações com WhatsApp e e-mail, além de integração nativa com os principais portais imobiliários (Zap Imóveis, Viva Real e OLX).
+- **Dashboards analíticos**: Mais de 50 KPIs de performance prontos para uso, dando visão clara sobre captação, produtividade do time e conversão do funil.
+
+## O que é a Partner API?
+
+Enquanto o painel da Keyspot foi feito para gestores e corretores operarem o dia a dia da imobiliária, a **Partner API** foi feita para você, desenvolvedor.
+
+É através da Partner API que o dado "sai e entra" da Keyspot de forma sistêmica. Com ela, você pode:
+- **Consultar imóveis**: Acessar o catálogo completo e atualizado de imóveis publicados, incluindo metadados, características, precificação e fotos.
+- **Consultar leads**: Ler dados dos leads cadastrados no CRM e entender em qual etapa do funil de atendimento eles se encontram.
+- **Criar novos leads**: Injetar leads captados em canais externos diretamente no funil da imobiliária na Keyspot, garantindo que o time de vendas inicie o atendimento imediatamente.
+
+Nossa API segue padrões de mercado REST, utiliza JSON em todas as respostas, conta com autenticação JWT segura e inclui paginação padronizada para grandes volumes de dados.
+
+## Casos de Uso
+
+A Partner API é ideal para diferentes perfis de integração:
+
+<CardGroup cols={2}>
+  <Card title="Portais e Marketplaces" icon="globe">
+    Mantenha o catálogo de imóveis sempre atualizado no seu portal. Consulte os imóveis ativos na Keyspot e sincronize preço, disponibilidade e fotos sem depender de arquivos XML assíncronos.
+  </Card>
+  <Card title="CRMs Externos" icon="users">
+    Conecte o sistema que a imobiliária já usa à Keyspot. Garanta que novos leads criados na Keyspot espelhem no seu CRM ou envie leads do seu sistema direto para o pipeline da imobiliária.
+  </Card>
+  <Card title="Automação de Marketing" icon="robot">
+    Filtre leads recém-criados ou acompanhe mudanças de status de atendimento para acionar fluxos de nutrição de e-mail marketing, réguas de WhatsApp ou anúncios de retargeting.
+  </Card>
+  <Card title="Sites e Landing Pages" icon="bolt">
+    Tem um front-end próprio construído sob medida para a imobiliária? Use a API para expor o inventário de imóveis no seu site customizado e captar leads dinâmicos.
+  </Card>
+</CardGroup>
+
+## Próximos passos
+
+Tudo pronto para colocar a mão na massa?
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/comece-aqui/quickstart">
+    Faça sua primeira chamada à API, liste imóveis e crie um lead em menos de 5 minutos, usando o nosso ambiente Sandbox.
+  </Card>
+  <Card title="Autenticação" icon="lock" href="/comece-aqui/autenticacao">
+    Entenda o fluxo de duas fases com JWT e veja como gerenciar suas credenciais nos ambientes de testes e produção.
+  </Card>
+</CardGroup>

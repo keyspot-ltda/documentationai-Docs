@@ -23,6 +23,11 @@
             "icon": "rocket",
             "pages": [
               {
+                "title": "Introdução",
+                "path": "comece-aqui/introducao",
+                "icon": "sparkles"
+              },
+              {
                 "title": "Quickstart",
                 "path": "comece-aqui/quickstart",
                 "icon": "zap"
