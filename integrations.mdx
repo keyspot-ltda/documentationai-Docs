@@ -1,0 +1,171 @@
+---
+title: Integrations and Connections
+description: Connect Keyspot with third-party tools and services to enhance your real estate workflow, including webhooks for automated data flow.
+---
+
+## Overview
+
+Keyspot supports seamless integrations with popular email providers, calendar apps, and external property listing services. These connections automate lead management, schedule viewings, and sync property data across platforms. Use built-in OAuth flows or webhooks to keep your real estate operations efficient.
+
+<Columns cols={3}>
+  <Card title="Email Apps" icon="mail" href="#email-integrations">
+    Sync leads directly to Gmail or Outlook for instant notifications.
+  </Card>
+  <Card title="Calendar Apps" icon="calendar" href="#calendar-integrations">
+    Automatically book property viewings with Google Calendar or Outlook.
+  </Card>
+  <Card title="Property Services" icon="home" href="#property-listings">
+    Import listings from external MLS or Zillow-like services.
+  </Card>
+</Columns>
+
+<Callout kind="tip">
+  Start with email integrations for quick wins, then add webhooks for advanced automation.
+</Callout>
+
+## Email Integrations
+
+Connect Keyspot to your email provider to receive lead notifications and automate follow-ups.
+
+<Tabs>
+  <Tab title="Gmail" icon="mail">
+    <Steps>
+      <Step title="Authorize OAuth">
+        Navigate to Keyspot Dashboard > Integrations > Email. Select Gmail and click "Connect".
+      </Step>
+      <Step title="Grant Permissions">
+        Review scopes for `gmail.send` and `gmail.readonly`. Approve access.
+      </Step>
+      <Step title="Test Connection">
+        Send a test lead email to verify setup.
+      </Step>
+    </Steps>
+
+    ```javascript
+    // Example lead notification payload
+    {
+      "leadId": "lead_123",
+      "email": "client@example.com",
+      "property": "3BR Apartment",
+      "message": "New inquiry received"
+    }
+    ```
+  </Tab>
+  <Tab title="Outlook" icon="microsoft">
+    <Steps>
+      <Step title="Connect Account">
+        Choose Outlook in integrations and sign in with Microsoft.
+      </Step>
+      <Step title="Configure Folders">
+        Map incoming leads to a specific inbox folder.
+      </Step>
+      <Step title="Verify">
+        Trigger a test notification.
+      </Step>
+    </Steps>
+  </Tab>
+</Tabs>
+
+## Calendar Integrations
+
+Sync property viewings and agent schedules effortlessly.
+
+<Tabs>
+  <Tab title="Google Calendar" icon="calendar">
+    Use OAuth to create events for new leads.
+
+    <CodeGroup tabs="JavaScript,Python">
+    ```javascript
+    const event = {
+      summary: 'Property Viewing - 3BR Apt',
+      start: { dateTime: '2024-10-15T14:00:00' },
+      attendees: [{ email: 'client@example.com' }]
+    };
+    await calendar.events.insert({ calendarId: 'primary', resource: event });
+    ```
+    ```python
+    event = {
+        'summary': 'Property Viewing - 3BR Apt',
+        'start': {'dateTime': '2024-10-15T14:00:00'},
+        'attendees': [{'email': 'client@example.com'}]
+    }
+    service.events().insert(calendarId='primary', body=event).execute()
+    ```
+    </CodeGroup>
+  </Tab>
+</Tabs>
+
+## Webhook Configuration
+
+Webhooks enable real-time notifications for new leads or property updates. Configure them in Dashboard > Integrations > Webhooks.
+
+<Steps>
+  <Step title="Create Webhook">
+    Enter your endpoint URL, e.g., `https://your-webhook-url.com/keyspot-leads`.
+    Select events: `lead.created`, `property.updated`.
+  </Step>
+  <Step title="Add Secret">
+    Generate and copy the signing secret for verification.
+  </Step>
+  <Step title="Test Delivery">
+    Trigger a test event and check your endpoint logs.
+  </Step>
+</Steps>
+
+<ParamField path="webhook_url" param-type="string" required="true">
+  Your public HTTPS endpoint to receive events.
+</ParamField>
+
+<ParamField header="X-Keyspot-Signature" param-type="string" required="true">
+  HMAC SHA256 signature using your secret.
+</ParamField>
+
+Example incoming payload:
+
+```json
+{
+  "event": "lead.created",
+  "data": {
+    "id": "lead_456",
+    "name": "John Doe",
+    "phone": "+5511999999999",
+    "propertyId": "prop_789"
+  },
+  "timestamp": 1729000000
+}
+```
+
+<Callout kind="alert">
+  Always validate webhook signatures to prevent unauthorized access. Use HTTPS only.
+</Callout>
+
+## External Property Listing Services
+
+Link Keyspot with MLS feeds or services like Zapier for property imports.
+
+<Expandable title="Advanced MLS Integration" default-open="false">
+  Use API keys from your MLS provider.
+
+  ```bash
+  curl -X POST https://api.example.com/properties/import \
+    -H "Authorization: Bearer YOUR_MLS_TOKEN" \
+    -d '{"source": "mls-feed", "properties": [...] }'
+  ```
+</Expandable>
+
+| Service | Connection Method | Sync Frequency |
+|---------|-------------------|----------------|
+| MLS Feed | API Polling | Hourly |
+| Zapier | Webhooks | Real-time |
+| Custom | Custom API | On-demand |
+
+## Next Steps
+
+<Columns cols={2}>
+  <Card title="API Reference" icon="code" href="/api-reference">
+    Dive into full REST API for custom integrations.
+  </Card>
+  <Card title="Troubleshooting" icon="help-circle" href="/troubleshooting">
+    Common issues and solutions.
+  </Card>
+</Columns>

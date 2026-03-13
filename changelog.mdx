@@ -1,0 +1,131 @@
+---
+title: Changelog
+description: Stay updated with the latest releases and improvements in Keyspot, highlighting new features and bug fixes.
+---
+
+## Recent Releases
+
+<Callout kind="info">
+  Subscribe to our changelog RSS feed or join the Keyspot community forum to get notified about new releases automatically.
+</Callout>
+
+Keyspot releases follow semantic versioning. Check the [release notes](/changelog#v1-2-0) below for detailed changes. Major versions may include breaking changes.
+
+| Version | Date       | Type          | Key Changes |
+|---------|------------|---------------|-------------|
+| v1.2.0  | 2024-10-15 | Feature, Improvement | AI site enhancements, CRM optimizations |
+| v1.1.0  | 2024-09-20 | Feature, Bugfix | Lead qualification improvements, bug fixes |
+| v1.0.0  | 2024-08-10 | Initial Release | Core CRM and site features |
+
+## v1.2.0
+
+<Update label="2024-10-15" description="v1.2.0" tags={["feature", "improvement"]}>
+
+## New Features
+
+- Added AI-powered property recommendations on the site vitrine, matching visitor preferences in real-time.
+- Introduced custom tags for imóveis (properties) in the CRM, with visual filters for better organization.
+
+## Improvements
+
+- Optimized CRM lead centralization, reducing load times by `>30%` for large real estate portfolios.
+- Enhanced site SEO with MCP Web support for AI agents to recommend your listings.
+
+## Bug Fixes
+
+- Fixed video feed rendering issues in the immersive site experience.
+- Resolved attendance tracking sync errors between site forms and CRM.
+
+</Update>
+
+## v1.1.0
+
+<Update label="2024-09-20" description="v1.1.0" tags={["feature", "bugfix"]}>
+
+## New Features
+
+- Launched IA modo (AI mode) for personalized property searches, like "Apartamento com 3 quartos".
+- Added empreendimentos (developments) pages with galleries, floor plans, and direct conversion tools.
+
+## Improvements
+
+- Upgraded lead qualification with intelligent scoring based on visitor behavior.
+
+## Bug Fixes
+
+- Corrected favoritos (favorites) personalization sync across devices.
+- Patched filters avançados (advanced filters) real-time update delays.
+
+</Update>
+
+## v1.0.0
+
+<Update label="2024-08-10" description="v1.0.0" tags={["feature", "breaking"]}>
+
+## Initial Release
+
+- Core CRM for centralizing leads, imóveis, and atendimento (support).
+- Complete site builder with IA integration for converting visitors to clients.
+- Vitrine inteligente (smart showcase), feed de vídeos (video feed), and exclusive designs.
+
+## Breaking Changes
+
+- Initial schema updates for property data; migrate existing data via dashboard.
+
+</Update>
+
+## Upgrade Instructions
+
+Follow these steps to update your Keyspot instance:
+
+<Steps>
+  <Step title="Check Compatibility" icon="check-circle">
+
+    Review the release notes above for breaking changes.
+
+  </Step>
+  <Step title="Backup Data" icon="database">
+
+    Export leads and imóveis from the dashboard.
+
+    ```
+    # Via dashboard: Settings > Data Export
+    ```
+
+  </Step>
+  <Step title="Apply Update" icon="zap">
+
+    In your dashboard, navigate to **Updates** and click **Upgrade Now**.
+
+  </Step>
+  <Step title="Verify Features" icon="search">
+
+    Test AI recommendations and CRM sync.
+
+  </Step>
+</Steps>
+
+## Known Limitations
+
+<Expandable title="Current Limitations & Workarounds" default-open="false">
+
+- AI recommendations limited to Portuguese searches; English support in v1.3.0.
+- Video feed max 10 items per page; use pagination for larger galleries.
+
+</Expandable>
+
+<Columns cols={3}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get started after upgrading.
+  </Card>
+  <Card title="AI Site Guide" icon="zap" href="/introduction">
+    Explore new AI features.
+  </Card>
+  <Card title="CRM Optimization" icon="settings" href="/authentication">
+    Best practices for leads.
+  </Card>
+</Columns>
+
+<Callout kind="tip">
+  Found a bug? Report it via the dashboard feedback form.
+</Callout>
