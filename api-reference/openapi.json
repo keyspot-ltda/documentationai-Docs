@@ -7,11 +7,11 @@
   },
   "servers": [
     {
-      "url": "https://sandbox-partner-api.keyspot.com.br/v1",
+      "url": "https://sandbox-partner-api.keyspot.com.br",
       "description": "Sandbox — para testes e integração"
     },
     {
-      "url": "https://partner-api.keyspot.com.br/v1",
+      "url": "https://partner-api.keyspot.com.br",
       "description": "Produção"
     }
   ],
