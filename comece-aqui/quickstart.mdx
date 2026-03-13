@@ -7,11 +7,31 @@ description: "Faça sua primeira chamada à Keyspot Partner API em 5 minutos. Ob
 
 Antes de começar, você precisa de:
 
-- Um par de credenciais (`API Key` + `API Secret`) fornecido pela equipe Keyspot
+- Um par de credenciais (`API Key` + `API Secret`) solicitado via chamado no CRM
 - Uma ferramenta para fazer requisições HTTP (curl, Postman, ou sua linguagem preferida)
 
 <Callout kind="info">
-  Ainda não tem credenciais? Entre em contato com a equipe Keyspot pelo e-mail **parcerias@keyspot.app** para solicitar acesso.
+  Ainda não tem credenciais? A `API Key` e o `API Secret` precisam ser solicitados via chamado no CRM por um usuário administrador. O link para abrir o chamado é: [https://crm.keyspot.com.br/support/tickets](https://crm.keyspot.com.br/support/tickets).
+</Callout>
+
+## Teste rápido com Sandbox
+
+Você pode começar a testar imediatamente usando o ambiente de **sandbox**, sem necessidade de solicitar credenciais. O sandbox vem pré-configurado com dados fictícios prontos para uso.
+
+Use as credenciais abaixo em todas as chamadas deste quickstart:
+
+```
+X-API-Key:    ks_live_k9xv2mp8qr1nl4wz7jy0ea3sd6fh5tg2u
+X-API-Secret: ks_secret_c8bn1mq4pk7rv0xj3yw6za9oe2iu5lhd
+```
+
+| Ambiente | URL Base |
+|----------|----------|
+| **Sandbox** | `https://sandbox-partner-api.keyspot.com.br` |
+| **Produção** | `https://partner-api.keyspot.com.br` |
+
+<Callout kind="alert">
+  As credenciais acima funcionam **exclusivamente** no ambiente sandbox e serão recusadas em produção. Para produção, solicite suas credenciais via chamado no CRM.
 </Callout>
 
 ## Sua primeira chamada em 5 minutos
@@ -22,11 +42,11 @@ Antes de começar, você precisa de:
 
     <CodeGroup tabs="Bash,TypeScript,Python">
       ```bash
-      curl https://partner-api.keyspot.app/health
+      curl https://sandbox-partner-api.keyspot.com.br/health
       ```
 
       ```typescript
-      const response = await fetch("https://partner-api.keyspot.app/health");
+      const response = await fetch("https://sandbox-partner-api.keyspot.com.br/health");
       const data = await response.json();
       console.log(data);
       // { "status": "ok", "timestamp": "2026-03-13T10:00:00.000Z" }
@@ -35,7 +55,7 @@ Antes de começar, você precisa de:
       ```python
       import requests
 
-      response = requests.get("https://partner-api.keyspot.app/health")
+      response = requests.get("https://sandbox-partner-api.keyspot.com.br/health")
       print(response.json())
       # {"status": "ok", "timestamp": "2026-03-13T10:00:00.000Z"}
       ```
@@ -47,17 +67,17 @@ Antes de começar, você precisa de:
 
     <CodeGroup tabs="Bash,TypeScript,Python">
       ```bash
-      curl -X POST https://partner-api.keyspot.app/v1/auth/token \
-        -H "X-API-Key: SUA_API_KEY" \
-        -H "X-API-Secret: SEU_API_SECRET"
+      curl -X POST https://sandbox-partner-api.keyspot.com.br/v1/auth/token \
+        -H "X-API-Key: ks_live_k9xv2mp8qr1nl4wz7jy0ea3sd6fh5tg2u" \
+        -H "X-API-Secret: ks_secret_c8bn1mq4pk7rv0xj3yw6za9oe2iu5lhd"
       ```
 
       ```typescript
-      const response = await fetch("https://partner-api.keyspot.app/v1/auth/token", {
+      const response = await fetch("https://sandbox-partner-api.keyspot.com.br/v1/auth/token", {
         method: "POST",
         headers: {
-          "X-API-Key": "SUA_API_KEY",
-          "X-API-Secret": "SEU_API_SECRET",
+          "X-API-Key": "ks_live_k9xv2mp8qr1nl4wz7jy0ea3sd6fh5tg2u",
+          "X-API-Secret": "ks_secret_c8bn1mq4pk7rv0xj3yw6za9oe2iu5lhd",
         },
       });
 
@@ -71,10 +91,10 @@ Antes de começar, você precisa de:
       import requests
 
       response = requests.post(
-          "https://partner-api.keyspot.app/v1/auth/token",
+          "https://sandbox-partner-api.keyspot.com.br/v1/auth/token",
           headers={
-              "X-API-Key": "SUA_API_KEY",
-              "X-API-Secret": "SEU_API_SECRET",
+              "X-API-Key": "ks_live_k9xv2mp8qr1nl4wz7jy0ea3sd6fh5tg2u",
+              "X-API-Secret": "ks_secret_c8bn1mq4pk7rv0xj3yw6za9oe2iu5lhd",
           },
       )
 
@@ -103,13 +123,13 @@ Antes de começar, você precisa de:
 
     <CodeGroup tabs="Bash,TypeScript,Python">
       ```bash
-      curl https://partner-api.keyspot.app/v1/properties\?fields\=code,title,status,operationType,pricing\&limit\=5 \
+      curl https://sandbox-partner-api.keyspot.com.br/v1/properties\?fields\=code,title,status,operationType,pricing\&limit\=5 \
         -H "Authorization: Bearer SEU_TOKEN_JWT"
       ```
 
       ```typescript
       const response = await fetch(
-        "https://partner-api.keyspot.app/v1/properties?fields=code,title,status,operationType,pricing&limit=5",
+        "https://sandbox-partner-api.keyspot.com.br/v1/properties?fields=code,title,status,operationType,pricing&limit=5",
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -126,7 +146,7 @@ Antes de começar, você precisa de:
       import requests
 
       response = requests.get(
-          "https://partner-api.keyspot.app/v1/properties",
+          "https://sandbox-partner-api.keyspot.com.br/v1/properties",
           params={
               "fields": "code,title,status,operationType,pricing",
               "limit": 5,
@@ -147,12 +167,12 @@ Antes de começar, você precisa de:
 
     <CodeGroup tabs="Bash,TypeScript,Python">
       ```bash
-      curl https://partner-api.keyspot.app/v1/fields \
+      curl https://sandbox-partner-api.keyspot.com.br/v1/fields \
         -H "Authorization: Bearer SEU_TOKEN_JWT"
       ```
 
       ```typescript
-      const response = await fetch("https://partner-api.keyspot.app/v1/fields", {
+      const response = await fetch("https://sandbox-partner-api.keyspot.com.br/v1/fields", {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -163,7 +183,7 @@ Antes de começar, você precisa de:
 
       ```python
       response = requests.get(
-          "https://partner-api.keyspot.app/v1/fields",
+          "https://sandbox-partner-api.keyspot.com.br/v1/fields",
           headers={"Authorization": f"Bearer {token}"},
       )
 
@@ -179,7 +199,7 @@ Antes de começar, você precisa de:
 
     <CodeGroup tabs="Bash,TypeScript,Python">
       ```bash
-      curl -X POST https://partner-api.keyspot.app/v1/leads \
+      curl -X POST https://sandbox-partner-api.keyspot.com.br/v1/leads \
         -H "Authorization: Bearer SEU_TOKEN_JWT" \
         -H "Content-Type: application/json" \
         -d '{
@@ -193,7 +213,7 @@ Antes de começar, você precisa de:
       ```
 
       ```typescript
-      const response = await fetch("https://partner-api.keyspot.app/v1/leads", {
+      const response = await fetch("https://sandbox-partner-api.keyspot.com.br/v1/leads", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -215,7 +235,7 @@ Antes de começar, você precisa de:
 
       ```python
       response = requests.post(
-          "https://partner-api.keyspot.app/v1/leads",
+          "https://sandbox-partner-api.keyspot.com.br/v1/leads",
           headers={
               "Authorization": f"Bearer {token}",
               "Content-Type": "application/json",
@@ -236,6 +256,10 @@ Antes de começar, você precisa de:
     </CodeGroup>
   </Step>
 </Steps>
+
+<Callout kind="info">
+  Os exemplos acima usam o ambiente **sandbox**. Quando estiver pronto para produção, basta trocar a URL base para `https://partner-api.keyspot.com.br` e usar suas credenciais de produção.
+</Callout>
 
 ## Erros comuns no início
 

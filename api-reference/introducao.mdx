@@ -3,13 +3,31 @@ title: "Visão Geral da API"
 description: "Visão geral da Keyspot Partner API: base URL, autenticação, formato de respostas, paginação e rate limiting."
 ---
 
-## Base URL
+## Ambientes
+
+A Partner API possui dois ambientes disponíveis:
+
+| Ambiente | URL Base |
+|----------|----------|
+| **Produção** | `https://partner-api.keyspot.com.br/v1` |
+| **Sandbox** | `https://sandbox-partner-api.keyspot.com.br/v1` |
+
+<Callout kind="tip">
+  O ambiente de **sandbox** é destinado a desenvolvedores que desejam testar a integração sem impacto em dados reais. O tenant de sandbox já vem pré-configurado com dados fictícios prontos para uso.
+</Callout>
+
+### Credenciais de teste (Sandbox)
+
+Use as credenciais abaixo para testar no sandbox sem necessidade de cadastro:
 
 ```
-https://partner-api.keyspot.app
+X-API-Key:    ks_live_k9xv2mp8qr1nl4wz7jy0ea3sd6fh5tg2u
+X-API-Secret: ks_secret_c8bn1mq4pk7rv0xj3yw6za9oe2iu5lhd
 ```
 
-Todas as rotas são prefixadas com `/v1/`.
+<Callout kind="alert">
+  Essas chaves funcionam **exclusivamente** no ambiente sandbox e serão recusadas em produção.
+</Callout>
 
 ## Autenticação
 

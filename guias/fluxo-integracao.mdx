@@ -20,13 +20,30 @@ graph LR
 
 <Steps>
   <Step title="Solicite credenciais" icon="key">
-    Entre em contato com a equipe Keyspot para receber seu par `API Key` + `API Secret`. Informe:
+    Abra um chamado no CRM com um usuário administrador para solicitar seu par `API Key` + `API Secret`. Acesse [https://crm.keyspot.com.br/support/tickets](https://crm.keyspot.com.br/support/tickets) e informe:
 
     - Nome da empresa parceira
     - Caso de uso da integração (portal, CRM, site, etc.)
     - IPs de origem das requisições (se aplicável)
 
     Você receberá credenciais com um rate limit configurado de acordo com seu caso de uso.
+  </Step>
+
+  <Step title="Teste no Sandbox" icon="flask">
+    Enquanto aguarda suas credenciais de produção, use o ambiente de **sandbox** para desenvolver e testar sua integração. O sandbox vem pré-configurado com dados fictícios.
+
+    **URL Base Sandbox:** `https://sandbox-partner-api.keyspot.com.br`
+
+    **Credenciais de teste (prontas para uso):**
+
+    ```
+    X-API-Key:    ks_live_k9xv2mp8qr1nl4wz7jy0ea3sd6fh5tg2u
+    X-API-Secret: ks_secret_c8bn1mq4pk7rv0xj3yw6za9oe2iu5lhd
+    ```
+
+    <Callout kind="alert">
+      Essas chaves funcionam **exclusivamente** no sandbox e serão recusadas em produção.
+    </Callout>
   </Step>
 
   <Step title="Implemente a autenticação" icon="lock">

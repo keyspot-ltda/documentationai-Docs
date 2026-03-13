@@ -7,7 +7,11 @@
   },
   "servers": [
     {
-      "url": "https://partner-api.keyspot.app",
+      "url": "https://sandbox-partner-api.keyspot.com.br/v1",
+      "description": "Sandbox — para testes e integração"
+    },
+    {
+      "url": "https://partner-api.keyspot.com.br/v1",
       "description": "Produção"
     }
   ],
@@ -43,7 +47,9 @@
         "operationId": "healthCheck",
         "summary": "Verificar status da API",
         "description": "Retorna o status de funcionamento da API. Não requer autenticação.",
-        "tags": ["Health"],
+        "tags": [
+          "Health"
+        ],
         "security": [],
         "responses": {
           "200": {
@@ -75,7 +81,9 @@
         "operationId": "createToken",
         "summary": "Gerar token de acesso",
         "description": "Fase 1 da autenticação. Envia as credenciais do parceiro via headers `X-API-Key` e `X-API-Secret` e recebe um token JWT válido por 1 hora.\n\nO token retornado deve ser utilizado como `Bearer` no header `Authorization` de todas as rotas protegidas.",
-        "tags": ["Auth"],
+        "tags": [
+          "Auth"
+        ],
         "security": [],
         "parameters": [
           {
@@ -85,7 +93,7 @@
             "description": "Chave de API do parceiro, fornecida pela Keyspot",
             "schema": {
               "type": "string",
-              "example": "ks_partner_abc123def456"
+              "example": "ks_live_k9xv2mp8qr1nl4wz7jy0ea3sd6fh5tg2u"
             }
           },
           {
@@ -95,7 +103,7 @@
             "description": "Secret de API do parceiro, fornecido pela Keyspot",
             "schema": {
               "type": "string",
-              "example": "ks_secret_xyz789"
+              "example": "ks_secret_c8bn1mq4pk7rv0xj3yw6za9oe2iu5lhd"
             }
           }
         ],
@@ -203,7 +211,9 @@
         "operationId": "listProperties",
         "summary": "Listar imóveis",
         "description": "Retorna uma lista paginada de imóveis publicados. Você controla quais campos são retornados através do parâmetro `fields` (obrigatório).\n\nCampos simples como `title`, `status` retornam valores diretos. Campos agrupados como `address`, `features`, `pricing` retornam objetos com sub-campos.\n\nSuporta filtros por status, tipo de operação, tipo de imóvel e datas de criação/atualização.",
-        "tags": ["Properties"],
+        "tags": [
+          "Properties"
+        ],
         "parameters": [
           {
             "name": "fields",
@@ -430,7 +440,9 @@
         "operationId": "listLeads",
         "summary": "Listar leads",
         "description": "Retorna uma lista paginada de leads. Você controla quais campos são retornados através do parâmetro `fields` (obrigatório).\n\nSuporta filtros por status e datas de criação/atualização.",
-        "tags": ["Leads"],
+        "tags": [
+          "Leads"
+        ],
         "parameters": [
           {
             "name": "fields",
@@ -620,7 +632,9 @@
         "operationId": "createLead",
         "summary": "Criar lead",
         "description": "Cria um novo lead no sistema. Campos obrigatórios: `name`, `email`, `phone` e `message`.\n\nSe `propertyCode` for informado e o imóvel existir, o lead será vinculado automaticamente ao imóvel. Se `interestedPropertyTitle` não for informado, será preenchido com o título do imóvel encontrado.\n\nO lead é criado com status `NEW_LEAD` e prioridade `MEDIUM` por padrão.",
-        "tags": ["Leads"],
+        "tags": [
+          "Leads"
+        ],
         "requestBody": {
           "required": true,
           "content": {
@@ -775,7 +789,9 @@
         "operationId": "listFields",
         "summary": "Listar campos disponíveis",
         "description": "Retorna todos os campos disponíveis para as entidades `properties` e `leads`. Use este endpoint para descobrir quais campos podem ser solicitados no parâmetro `fields` dos endpoints de listagem.\n\nCampos podem ser simples (retornam valor direto) ou agrupados (retornam objeto com sub-campos).",
-        "tags": ["Fields"],
+        "tags": [
+          "Fields"
+        ],
         "responses": {
           "200": {
             "description": "Campos retornados com sucesso",
@@ -792,26 +808,52 @@
                 "example": {
                   "data": {
                     "properties": {
-                      "id": { "description": "Unique identifier" },
-                      "code": { "description": "Property code" },
-                      "title": { "description": "Property title" },
+                      "id": {
+                        "description": "Unique identifier"
+                      },
+                      "code": {
+                        "description": "Property code"
+                      },
+                      "title": {
+                        "description": "Property title"
+                      },
                       "address": {
                         "description": "Address information",
                         "fields": {
-                          "street": { "description": "Street name" },
-                          "number": { "description": "Street number" },
-                          "neighborhood": { "description": "Neighborhood name" },
-                          "city": { "description": "City name" },
-                          "state": { "description": "State name" },
-                          "uf": { "description": "State abbreviation" },
-                          "cep": { "description": "Postal code" }
+                          "street": {
+                            "description": "Street name"
+                          },
+                          "number": {
+                            "description": "Street number"
+                          },
+                          "neighborhood": {
+                            "description": "Neighborhood name"
+                          },
+                          "city": {
+                            "description": "City name"
+                          },
+                          "state": {
+                            "description": "State name"
+                          },
+                          "uf": {
+                            "description": "State abbreviation"
+                          },
+                          "cep": {
+                            "description": "Postal code"
+                          }
                         }
                       }
                     },
                     "leads": {
-                      "id": { "description": "Unique identifier" },
-                      "name": { "description": "Lead name" },
-                      "email": { "description": "Lead email" }
+                      "id": {
+                        "description": "Unique identifier"
+                      },
+                      "name": {
+                        "description": "Lead name"
+                      },
+                      "email": {
+                        "description": "Lead email"
+                      }
                     }
                   }
                 }
@@ -840,7 +882,9 @@
         "operationId": "getDistinctValues",
         "summary": "Obter valores distintos de um campo",
         "description": "Retorna os valores distintos disponíveis para um campo específico de uma entidade. Útil para popular filtros e selects na sua aplicação.\n\n**Campos consultáveis:**\n- `properties`: `status`, `operationType`, `propertyType`, `highlight`\n- `leads`: `status`, `source`, `priority`",
-        "tags": ["Values"],
+        "tags": [
+          "Values"
+        ],
         "parameters": [
           {
             "name": "entity",
@@ -849,7 +893,10 @@
             "description": "Nome da entidade (`properties` ou `leads`)",
             "schema": {
               "type": "string",
-              "enum": ["properties", "leads"],
+              "enum": [
+                "properties",
+                "leads"
+              ],
               "example": "properties"
             }
           },
@@ -881,7 +928,13 @@
                   "data": {
                     "entity": "properties",
                     "field": "status",
-                    "values": ["AVAILABLE", "RENTED", "RESERVED", "SOLD", "UNAVAILABLE"]
+                    "values": [
+                      "AVAILABLE",
+                      "RENTED",
+                      "RESERVED",
+                      "SOLD",
+                      "UNAVAILABLE"
+                    ]
                   }
                 }
               }
@@ -949,7 +1002,11 @@
     "schemas": {
       "TokenResponse": {
         "type": "object",
-        "required": ["token", "expiresIn", "tokenType"],
+        "required": [
+          "token",
+          "expiresIn",
+          "tokenType"
+        ],
         "properties": {
           "token": {
             "type": "string",
@@ -1059,141 +1116,439 @@
         "type": "object",
         "description": "Endereço do imóvel",
         "properties": {
-          "street": { "type": "string", "nullable": true, "description": "Nome da rua", "example": "Rua das Flores" },
-          "number": { "type": "string", "nullable": true, "description": "Número", "example": "123" },
-          "complement": { "type": "string", "nullable": true, "description": "Complemento", "example": "Apto 401" },
-          "neighborhood": { "type": "string", "nullable": true, "description": "Bairro", "example": "Centro" },
-          "city": { "type": "string", "nullable": true, "description": "Cidade", "example": "São Paulo" },
-          "state": { "type": "string", "nullable": true, "description": "Estado", "example": "São Paulo" },
-          "uf": { "type": "string", "nullable": true, "description": "Sigla do estado", "example": "SP" },
-          "cep": { "type": "string", "nullable": true, "description": "CEP", "example": "01001-000" }
+          "street": {
+            "type": "string",
+            "nullable": true,
+            "description": "Nome da rua",
+            "example": "Rua das Flores"
+          },
+          "number": {
+            "type": "string",
+            "nullable": true,
+            "description": "Número",
+            "example": "123"
+          },
+          "complement": {
+            "type": "string",
+            "nullable": true,
+            "description": "Complemento",
+            "example": "Apto 401"
+          },
+          "neighborhood": {
+            "type": "string",
+            "nullable": true,
+            "description": "Bairro",
+            "example": "Centro"
+          },
+          "city": {
+            "type": "string",
+            "nullable": true,
+            "description": "Cidade",
+            "example": "São Paulo"
+          },
+          "state": {
+            "type": "string",
+            "nullable": true,
+            "description": "Estado",
+            "example": "São Paulo"
+          },
+          "uf": {
+            "type": "string",
+            "nullable": true,
+            "description": "Sigla do estado",
+            "example": "SP"
+          },
+          "cep": {
+            "type": "string",
+            "nullable": true,
+            "description": "CEP",
+            "example": "01001-000"
+          }
         }
       },
       "Coordinates": {
         "type": "object",
         "description": "Coordenadas geográficas do imóvel",
         "properties": {
-          "latitude": { "type": "number", "nullable": true, "description": "Latitude", "example": -23.5505 },
-          "longitude": { "type": "number", "nullable": true, "description": "Longitude", "example": -46.6333 }
+          "latitude": {
+            "type": "number",
+            "nullable": true,
+            "description": "Latitude",
+            "example": -23.5505
+          },
+          "longitude": {
+            "type": "number",
+            "nullable": true,
+            "description": "Longitude",
+            "example": -46.6333
+          }
         }
       },
       "Features": {
         "type": "object",
         "description": "Características do imóvel",
         "properties": {
-          "totalArea": { "type": "number", "nullable": true, "description": "Área total em m²", "example": 120 },
-          "builtArea": { "type": "number", "nullable": true, "description": "Área construída em m²", "example": 95 },
-          "bedrooms": { "type": "integer", "nullable": true, "description": "Número de quartos", "example": 3 },
-          "bathrooms": { "type": "integer", "nullable": true, "description": "Número de banheiros", "example": 2 },
-          "suites": { "type": "integer", "nullable": true, "description": "Número de suítes", "example": 1 },
-          "parkingSpaces": { "type": "integer", "nullable": true, "description": "Número de vagas de garagem", "example": 2 },
-          "floor": { "type": "integer", "nullable": true, "description": "Andar do imóvel", "example": 4 },
-          "totalFloors": { "type": "integer", "nullable": true, "description": "Total de andares do edifício", "example": 20 },
-          "isFurnished": { "type": "boolean", "description": "Se o imóvel é mobiliado", "example": false }
+          "totalArea": {
+            "type": "number",
+            "nullable": true,
+            "description": "Área total em m²",
+            "example": 120
+          },
+          "builtArea": {
+            "type": "number",
+            "nullable": true,
+            "description": "Área construída em m²",
+            "example": 95
+          },
+          "bedrooms": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Número de quartos",
+            "example": 3
+          },
+          "bathrooms": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Número de banheiros",
+            "example": 2
+          },
+          "suites": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Número de suítes",
+            "example": 1
+          },
+          "parkingSpaces": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Número de vagas de garagem",
+            "example": 2
+          },
+          "floor": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Andar do imóvel",
+            "example": 4
+          },
+          "totalFloors": {
+            "type": "integer",
+            "nullable": true,
+            "description": "Total de andares do edifício",
+            "example": 20
+          },
+          "isFurnished": {
+            "type": "boolean",
+            "description": "Se o imóvel é mobiliado",
+            "example": false
+          }
         }
       },
       "Pricing": {
         "type": "object",
         "description": "Valores do imóvel",
         "properties": {
-          "salePrice": { "type": "number", "nullable": true, "description": "Preço de venda em reais", "example": 450000 },
-          "rentalPrice": { "type": "number", "nullable": true, "description": "Preço de aluguel mensal em reais", "example": 2500 },
-          "condominiumFee": { "type": "number", "nullable": true, "description": "Taxa de condomínio mensal em reais", "example": 800 },
-          "iptu": { "type": "number", "nullable": true, "description": "IPTU anual em reais", "example": 2400 }
+          "salePrice": {
+            "type": "number",
+            "nullable": true,
+            "description": "Preço de venda em reais",
+            "example": 450000
+          },
+          "rentalPrice": {
+            "type": "number",
+            "nullable": true,
+            "description": "Preço de aluguel mensal em reais",
+            "example": 2500
+          },
+          "condominiumFee": {
+            "type": "number",
+            "nullable": true,
+            "description": "Taxa de condomínio mensal em reais",
+            "example": 800
+          },
+          "iptu": {
+            "type": "number",
+            "nullable": true,
+            "description": "IPTU anual em reais",
+            "example": 2400
+          }
         }
       },
       "Financing": {
         "type": "object",
         "description": "Opções de financiamento",
         "properties": {
-          "acceptsFinancing": { "type": "boolean", "description": "Se aceita financiamento", "example": true }
+          "acceptsFinancing": {
+            "type": "boolean",
+            "description": "Se aceita financiamento",
+            "example": true
+          }
         }
       },
       "Photo": {
         "type": "object",
         "description": "Foto do imóvel",
-        "required": ["id", "url", "order", "isMain"],
+        "required": [
+          "id",
+          "url",
+          "order",
+          "isMain"
+        ],
         "properties": {
-          "id": { "type": "string", "description": "Identificador da foto", "example": "photo-001" },
-          "url": { "type": "string", "description": "URL da imagem", "example": "https://cdn.keyspot.app/photos/photo-001.jpg" },
-          "alt": { "type": "string", "nullable": true, "description": "Texto alternativo", "example": "Sala de estar ampla" },
-          "order": { "type": "integer", "description": "Ordem de exibição", "example": 1 },
-          "isMain": { "type": "boolean", "description": "Se é a foto principal", "example": true }
+          "id": {
+            "type": "string",
+            "description": "Identificador da foto",
+            "example": "photo-001"
+          },
+          "url": {
+            "type": "string",
+            "description": "URL da imagem",
+            "example": "https://cdn.keyspot.app/photos/photo-001.jpg"
+          },
+          "alt": {
+            "type": "string",
+            "nullable": true,
+            "description": "Texto alternativo",
+            "example": "Sala de estar ampla"
+          },
+          "order": {
+            "type": "integer",
+            "description": "Ordem de exibição",
+            "example": 1
+          },
+          "isMain": {
+            "type": "boolean",
+            "description": "Se é a foto principal",
+            "example": true
+          }
         }
       },
       "Lead": {
         "type": "object",
         "description": "Lead (contato de interessado). Os campos retornados dependem do parâmetro `fields` na requisição (GET) ou são retornados completos (POST).",
         "properties": {
-          "id": { "type": "string", "description": "Identificador único do lead", "example": "clx1abc23def456" },
-          "name": { "type": "string", "description": "Nome do lead", "example": "João Silva" },
-          "email": { "type": "string", "format": "email", "description": "E-mail do lead", "example": "joao@example.com" },
-          "phone": { "type": "string", "description": "Telefone do lead", "example": "11999999999" },
-          "message": { "type": "string", "description": "Mensagem do lead", "example": "Tenho interesse neste imóvel." },
-          "source": { "$ref": "#/components/schemas/LeadSource" },
-          "status": { "$ref": "#/components/schemas/LeadStatus" },
-          "priority": { "$ref": "#/components/schemas/LeadPriority" },
-          "propertyId": { "type": "string", "nullable": true, "description": "ID do imóvel vinculado", "example": "clx1abc23def456" },
-          "interestedPropertyTitle": { "type": "string", "nullable": true, "description": "Título do imóvel de interesse", "example": "Apartamento Moderno - Centro" },
-          "createdAt": { "type": "string", "format": "date-time", "description": "Data de criação (ISO 8601)", "example": "2026-03-13T10:30:00.000Z" },
-          "updatedAt": { "type": "string", "format": "date-time", "description": "Data da última atualização (ISO 8601)", "example": "2026-03-13T10:30:00.000Z" }
+          "id": {
+            "type": "string",
+            "description": "Identificador único do lead",
+            "example": "clx1abc23def456"
+          },
+          "name": {
+            "type": "string",
+            "description": "Nome do lead",
+            "example": "João Silva"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "E-mail do lead",
+            "example": "joao@example.com"
+          },
+          "phone": {
+            "type": "string",
+            "description": "Telefone do lead",
+            "example": "11999999999"
+          },
+          "message": {
+            "type": "string",
+            "description": "Mensagem do lead",
+            "example": "Tenho interesse neste imóvel."
+          },
+          "source": {
+            "$ref": "#/components/schemas/LeadSource"
+          },
+          "status": {
+            "$ref": "#/components/schemas/LeadStatus"
+          },
+          "priority": {
+            "$ref": "#/components/schemas/LeadPriority"
+          },
+          "propertyId": {
+            "type": "string",
+            "nullable": true,
+            "description": "ID do imóvel vinculado",
+            "example": "clx1abc23def456"
+          },
+          "interestedPropertyTitle": {
+            "type": "string",
+            "nullable": true,
+            "description": "Título do imóvel de interesse",
+            "example": "Apartamento Moderno - Centro"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data de criação (ISO 8601)",
+            "example": "2026-03-13T10:30:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time",
+            "description": "Data da última atualização (ISO 8601)",
+            "example": "2026-03-13T10:30:00.000Z"
+          }
         }
       },
       "CreateLeadInput": {
         "type": "object",
-        "required": ["name", "email", "phone", "message"],
+        "required": [
+          "name",
+          "email",
+          "phone",
+          "message"
+        ],
         "description": "Dados para criação de um novo lead",
         "properties": {
-          "name": { "type": "string", "minLength": 1, "description": "Nome do contato", "example": "João Silva" },
-          "email": { "type": "string", "format": "email", "description": "E-mail do contato", "example": "joao@example.com" },
-          "phone": { "type": "string", "minLength": 1, "description": "Telefone do contato", "example": "11999999999" },
-          "message": { "type": "string", "minLength": 1, "description": "Mensagem do contato", "example": "Tenho interesse neste imóvel, gostaria de mais informações." },
-          "source": { "$ref": "#/components/schemas/LeadSource" },
-          "propertyCode": { "type": "string", "description": "Código do imóvel para vinculação automática", "example": "PROP-001" },
-          "interestedPropertyTitle": { "type": "string", "description": "Título do imóvel de interesse (preenchido automaticamente se `propertyCode` for encontrado)", "example": "Apartamento Moderno - Centro" },
-          "interestedPropertyLink": { "type": "string", "description": "Link do imóvel de interesse", "example": "https://site.com.br/imovel/prop-001" },
-          "trafficOrigin": { "type": "string", "description": "Origem do tráfego para rastreamento (UTM, campanha, etc.)", "example": "google-ads-campanha-verao" }
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Nome do contato",
+            "example": "João Silva"
+          },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "description": "E-mail do contato",
+            "example": "joao@example.com"
+          },
+          "phone": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Telefone do contato",
+            "example": "11999999999"
+          },
+          "message": {
+            "type": "string",
+            "minLength": 1,
+            "description": "Mensagem do contato",
+            "example": "Tenho interesse neste imóvel, gostaria de mais informações."
+          },
+          "source": {
+            "$ref": "#/components/schemas/LeadSource"
+          },
+          "propertyCode": {
+            "type": "string",
+            "description": "Código do imóvel para vinculação automática",
+            "example": "PROP-001"
+          },
+          "interestedPropertyTitle": {
+            "type": "string",
+            "description": "Título do imóvel de interesse (preenchido automaticamente se `propertyCode` for encontrado)",
+            "example": "Apartamento Moderno - Centro"
+          },
+          "interestedPropertyLink": {
+            "type": "string",
+            "description": "Link do imóvel de interesse",
+            "example": "https://site.com.br/imovel/prop-001"
+          },
+          "trafficOrigin": {
+            "type": "string",
+            "description": "Origem do tráfego para rastreamento (UTM, campanha, etc.)",
+            "example": "google-ads-campanha-verao"
+          }
         }
       },
       "PropertyStatus": {
         "type": "string",
-        "enum": ["AVAILABLE", "SOLD", "RENTED", "RESERVED", "UNAVAILABLE"],
+        "enum": [
+          "AVAILABLE",
+          "SOLD",
+          "RENTED",
+          "RESERVED",
+          "UNAVAILABLE"
+        ],
         "description": "Status do imóvel",
         "example": "AVAILABLE"
       },
       "OperationType": {
         "type": "string",
-        "enum": ["SALE", "RENT", "SEASONAL"],
+        "enum": [
+          "SALE",
+          "RENT",
+          "SEASONAL"
+        ],
         "description": "Tipo de operação do imóvel",
         "example": "SALE"
       },
       "LeadStatus": {
         "type": "string",
-        "enum": ["NEW_LEAD", "IN_SERVICE", "VISIT_SCHEDULED", "VISIT_COMPLETED", "PROPOSAL_MADE", "CONVERTED", "LOST"],
+        "enum": [
+          "NEW_LEAD",
+          "IN_SERVICE",
+          "VISIT_SCHEDULED",
+          "VISIT_COMPLETED",
+          "PROPOSAL_MADE",
+          "CONVERTED",
+          "LOST"
+        ],
         "description": "Status do lead no funil de vendas",
         "example": "NEW_LEAD"
       },
       "LeadSource": {
         "type": "string",
-        "enum": ["WEBSITE", "WHATSAPP", "PHONE", "EMAIL", "SOCIAL_MEDIA", "INSTAGRAM", "FACEBOOK", "PORTAL", "PORTAL_VIVAREAL", "PORTAL_ZAPIMOVEIS", "PORTAL_OLX", "PORTAL_IMOVELWEB", "PORTAL_CHAVESNAMAO", "META_ADS", "GOOGLE_ADS", "RD_STATION", "REFERRAL", "REAL_ESTATE", "OTHER", "API"],
+        "enum": [
+          "WEBSITE",
+          "WHATSAPP",
+          "PHONE",
+          "EMAIL",
+          "SOCIAL_MEDIA",
+          "INSTAGRAM",
+          "FACEBOOK",
+          "PORTAL",
+          "PORTAL_VIVAREAL",
+          "PORTAL_ZAPIMOVEIS",
+          "PORTAL_OLX",
+          "PORTAL_IMOVELWEB",
+          "PORTAL_CHAVESNAMAO",
+          "META_ADS",
+          "GOOGLE_ADS",
+          "RD_STATION",
+          "REFERRAL",
+          "REAL_ESTATE",
+          "OTHER",
+          "API"
+        ],
         "description": "Fonte de origem do lead",
         "example": "WEBSITE"
       },
       "LeadPriority": {
         "type": "string",
-        "enum": ["LOW", "MEDIUM", "HIGH"],
+        "enum": [
+          "LOW",
+          "MEDIUM",
+          "HIGH"
+        ],
         "description": "Prioridade do lead",
         "example": "MEDIUM"
       },
       "PaginationMeta": {
         "type": "object",
-        "required": ["page", "limit", "total", "totalPages"],
+        "required": [
+          "page",
+          "limit",
+          "total",
+          "totalPages"
+        ],
         "description": "Metadados de paginação",
         "properties": {
-          "page": { "type": "integer", "description": "Página atual", "example": 1 },
-          "limit": { "type": "integer", "description": "Itens por página", "example": 20 },
-          "total": { "type": "integer", "description": "Total de registros", "example": 150 },
-          "totalPages": { "type": "integer", "description": "Total de páginas", "example": 8 }
+          "page": {
+            "type": "integer",
+            "description": "Página atual",
+            "example": 1
+          },
+          "limit": {
+            "type": "integer",
+            "description": "Itens por página",
+            "example": 20
+          },
+          "total": {
+            "type": "integer",
+            "description": "Total de registros",
+            "example": 150
+          },
+          "totalPages": {
+            "type": "integer",
+            "description": "Total de páginas",
+            "example": 8
+          }
         }
       },
       "FieldsRegistry": {
@@ -1206,19 +1561,25 @@
               {
                 "type": "object",
                 "properties": {
-                  "description": { "type": "string" }
+                  "description": {
+                    "type": "string"
+                  }
                 }
               },
               {
                 "type": "object",
                 "properties": {
-                  "description": { "type": "string" },
+                  "description": {
+                    "type": "string"
+                  },
                   "fields": {
                     "type": "object",
                     "additionalProperties": {
                       "type": "object",
                       "properties": {
-                        "description": { "type": "string" }
+                        "description": {
+                          "type": "string"
+                        }
                       }
                     }
                   }
@@ -1230,26 +1591,57 @@
       },
       "ValuesResponse": {
         "type": "object",
-        "required": ["entity", "field", "values"],
+        "required": [
+          "entity",
+          "field",
+          "values"
+        ],
         "description": "Resposta de valores distintos",
         "properties": {
-          "entity": { "type": "string", "description": "Entidade consultada", "example": "properties" },
-          "field": { "type": "string", "description": "Campo consultado", "example": "status" },
+          "entity": {
+            "type": "string",
+            "description": "Entidade consultada",
+            "example": "properties"
+          },
+          "field": {
+            "type": "string",
+            "description": "Campo consultado",
+            "example": "status"
+          },
           "values": {
             "type": "array",
-            "items": { "type": "string" },
+            "items": {
+              "type": "string"
+            },
             "description": "Valores distintos encontrados",
-            "example": ["AVAILABLE", "RENTED", "RESERVED", "SOLD", "UNAVAILABLE"]
+            "example": [
+              "AVAILABLE",
+              "RENTED",
+              "RESERVED",
+              "SOLD",
+              "UNAVAILABLE"
+            ]
           }
         }
       },
       "ErrorResponse": {
         "type": "object",
-        "required": ["error", "code"],
+        "required": [
+          "error",
+          "code"
+        ],
         "description": "Resposta de erro padronizada",
         "properties": {
-          "error": { "type": "string", "description": "Mensagem de erro legível", "example": "Invalid or expired token" },
-          "code": { "type": "string", "description": "Código de erro programático", "example": "INVALID_TOKEN" }
+          "error": {
+            "type": "string",
+            "description": "Mensagem de erro legível",
+            "example": "Invalid or expired token"
+          },
+          "code": {
+            "type": "string",
+            "description": "Código de erro programático",
+            "example": "INVALID_TOKEN"
+          }
         }
       }
     },

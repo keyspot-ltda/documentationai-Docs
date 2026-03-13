@@ -15,17 +15,6 @@
         "icon": "book",
         "groups": [
           {
-            "group": "Inicio",
-            "icon": "home",
-            "pages": [
-              {
-                "title": "Introducao",
-                "path": "introduction",
-                "icon": "home"
-              }
-            ]
-          },
-          {
             "group": "Comece Aqui",
             "icon": "rocket",
             "pages": [
